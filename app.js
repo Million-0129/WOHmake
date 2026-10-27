@@ -108,7 +108,7 @@ class Editor extends Component {
     mode:"info", slot:4, zoom:null, panMode:false, filter:"orig", tool:"pencil",
     color:"#ff40fe", colorName:"포인트 #FF40FE", color2:"#ffffff", color2Name:"흰색 255", h:300, s:0.75, v:1,
     mirror:false, under:true, underPct:30, underWhich:"a", live:{}, warn:{}, active:{}, outfit:"a",
-    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, exportAsk:false, itoPick:null, pathMap:{},
+    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, exportAsk:false, big:0, itoPick:null, pathMap:{},
     bonusA:null, bonusB:null, bonusTarget:"a", bonusCat:"all", bonusQuery:"", numVals:{funds:5,doom:5,bullets:3,cigarettes:5}, perkView:"packs", tip:null, unlocked:{}, confirm:null,
     stats:{...DEFAULT_STATS},
     info:{...BLANK_INFO},
@@ -741,6 +741,10 @@ class Editor extends Component {
       leftStats: [0,1,2,5].map(i => this.statRow(i)), rightStats: [4,3].map(i => this.statRow(i)),
       fnd: [st.bonusA, st.bonusB].reduce((a, b) => a + (b && b.t === "funds" ? (Number(b.v) || 0) : 0), 0),
       statSum: sum,
+      openBig: () => this.setState({ big: 3 }), closeBig: () => this.setState({ big: 0 }), stop: (e) => e.stopPropagation(), bigOn: st.big > 0,
+      bigW: 195 * (st.big || 1), bigH: 164 * (st.big || 1),
+      bigScales: [1,2,3,4].map(n => ({ n, on: st.big === n, ...inv(st.big === n), pick: () => this.setState({ big: n }) })),
+      bigNote: st.big === 1 ? "원본 픽셀 크기 (195×164)" : (195 * st.big) + "×" + (164 * st.big),
       outfitA: () => this.setState({ outfit:"a", underWhich:"a" }), outfitB: () => this.setState({ outfit:"b", underWhich:"b" }),
       oa: inv(st.outfit === "a"), ob: inv(st.outfit === "b"),
       previewBase: baseSrc,
@@ -1031,6 +1035,14 @@ ${(v.isExport) ? html`
 <div class="tip-wrap"><div style="font-weight:700;padding-top:6px">내보낼 언어 ?</div><div class="tip l" role="tooltip"><b>내보낼 언어</b><br />시작 보너스의 아이템·주문 이름은 플레이어의 게임 언어와 글자까지 같아야 인식됩니다. 퍽팩은 언어와 상관없이 영어 원문으로 저장됩니다.</div></div>
 <div style="display:flex;gap:4px"><button type="button" onClick=${v.langKo} aria-pressed=${v.lkO.on} style="flex:1;height:24px;border:2px solid ${v.c.ink};cursor:pointer;background:${v.lkO.bg};color:${v.lkO.fg}">한국어</button><button type="button" onClick=${v.langEn} aria-pressed=${v.lEn.on} style="flex:1;height:24px;border:2px solid ${v.c.ink};cursor:pointer;background:${v.lEn.bg};color:${v.lEn.fg}">English</button></div>
 <div style="font-size:11px;line-height:14px">아이템 이름은 플레이하는 게임 언어와 같아야 합니다.</div>
+<div style="margin-top:6px;border:2px solid ${v.c.ink};font-size:11px;line-height:15px">
+<div style="padding:3px 6px;background:${v.c.ink};color:${v.c.panel};font-weight:700">설치 방법</div>
+<div style="padding:5px 6px;display:flex;flex-direction:column;gap:3px">
+<span>경로: 스팀 로컬 파일 위치 → W.O.H 폴더</span>
+<span>[character] 폴더에 압축 해제한 파일을 넣어주세요. 폴더가 없다면 직접 만들어주세요.</span>
+<span>.ito 파일을 메모장으로 열면 능력치를 자유롭게 바꾸실 수 있습니다.</span>
+</div>
+</div>
 <span style="flex-grow:1"></span>
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px">
 <button type="button" onClick=${v.saveWork} style="height:26px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer;font-size:11px">작업 파일 저장</button>
@@ -1100,6 +1112,7 @@ ${(v.perkLines || []).map((p, $index) => html`
 <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:6px 0 8px;gap:4px;background:${v.c.paper}">
 <div style="width:394px;display:flex;align-items:center;gap:4px;font-size:11px">
 <div class="tip-wrap" style="flex-grow:1"><span>합계 ${v.statSum} (권장 39)</span><div class="tip l" role="tooltip"><b>능력치 합계</b><br />커뮤니티 모딩 가이드는 여섯 능력치 합을 39 안팎, 운은 6으로 맞추길 권합니다. 해금 캐릭터 중엔 예외도 있습니다.</div></div>
+<button type="button" onClick=${v.openBig} title="실제 게임 배율로 크게 봅니다" style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.c.panel};color:${v.c.ink}">크게 보기</button>
 <button type="button" onClick=${v.outfitA} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.oa.bg};color:${v.oa.fg}">의상 A</button>
 <button type="button" onClick=${v.outfitB} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.ob.bg};color:${v.ob.fg}">의상 B</button>
 </div>
@@ -1140,6 +1153,25 @@ ${(v.statusToggles || []).map((s, $index) => html`
 ${(v.dragOver) ? html`
 <div aria-hidden="true" style="position:absolute;inset:0;z-index:95;pointer-events:none;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center">
 <div style="padding:18px 28px;background:${v.c.ink};color:${v.c.panel};border:2px solid ${v.c.panel};outline:2px solid ${v.c.ink};box-shadow:6px 6px 0 ${v.c.mid};font-size:14px;line-height:22px;text-align:center"><b>여기에 놓으면 불러옵니다</b><br /><span style="font-size:11px">폴더 · zip · .ito · 그림(png)</span></div>
+</div>
+` : null}
+${(v.bigOn) ? html`
+<div role="dialog" aria-label="초상화 크게 보기" onClick=${v.closeBig} style="position:absolute;inset:0;z-index:96;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:8px;overflow:auto;padding:8px">
+<div onClick=${v.stop} style="display:flex;align-items:center;gap:4px;background:${v.c.panel};color:${v.c.ink};border:2px solid ${v.c.ink};padding:4px 6px">
+<span style="font-weight:700;margin-right:4px">배율</span>
+${(v.bigScales || []).map((b, $index) => html`
+<button type="button" onClick=${b.pick} aria-pressed=${b.on} style="height:22px;min-width:34px;border:2px solid ${v.c.ink};cursor:pointer;background:${b.bg};color:${b.fg}">×${b.n}</button>
+`)}
+<span style="font-size:10px;color:${v.c.mid};margin:0 6px">${v.bigNote}</span>
+<button type="button" onClick=${v.closeBig} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;background:${v.c.ink};color:${v.c.panel};padding:0 8px">닫기</button>
+</div>
+<div onClick=${v.stop} style="position:relative;width:${v.bigW}px;height:${v.bigH}px;border:2px solid ${v.c.panel};background:#000000;image-rendering:pixelated">
+<img src="preview_bg.png" alt style="position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;filter:${v.imgFilter}" />
+<img src=${v.previewBase} alt="초상화 크게 보기" style="position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;filter:${v.imgFilter}" />
+${(v.overlays || []).map((o, $index) => html`
+<img src=${o.src} alt style="position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;filter:${v.imgFilter}" />
+`)}
+</div>
 </div>
 ` : null}
 ${(v.exportAsk) ? html`
