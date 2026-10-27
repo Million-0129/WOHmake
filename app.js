@@ -70,6 +70,8 @@ const NUM_DESC = {funds:"시작 자금이 그만큼 늘어납니다. 음수도 �
 const STATS = [["strength","STR","힘 (STR)"],["dexterity","DEX","민첩 (DEX)"],["perception","PER","인지 (PER)"],["charisma","CHR","매력 (CHR)"],["knowledge","KNW","지식 (KNW)"],["luck","LCK","운 (LUCK)"]];
 // 공방 종류별 고정 폴더 접두사: 캐릭터 character_, 에너미 enemy_, 미스터리 mystery_
 const FOLDER_PREFIX = "character_";
+const KEY_SOUND_COUNT = 19;
+const CLICK_SOUND_COUNT = 2;
 const FILTERS = {
   orig:{label:"원본",ink:"#111111",paper:"#e9e9e4",panel:"#ffffff",mid:"#6b6b6b",img:"none"},
   dusk:{label:"어스름",ink:"#242732",paper:"#cfd3d8",panel:"#e6eaed",mid:"#6b6f7d",img:"url(#woh-dusk)"},
@@ -106,7 +108,7 @@ class Editor extends Component {
     mode:"info", slot:4, zoom:null, panMode:false, filter:"orig", tool:"pencil",
     color:"#ff40fe", colorName:"포인트 #FF40FE", color2:"#ffffff", color2Name:"흰색 255", h:300, s:0.75, v:1,
     mirror:false, under:true, underPct:30, underWhich:"a", live:{}, warn:{}, active:{}, outfit:"a",
-    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", importMenu:false, dragOver:false, itoPick:null, pathMap:{},
+    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, itoPick:null, pathMap:{},
     bonusA:null, bonusB:null, bonusTarget:"a", bonusCat:"all", bonusQuery:"", numVals:{funds:5,doom:5,bullets:3,cigarettes:5}, perkView:"packs", tip:null, unlocked:{}, confirm:null,
     stats:{...DEFAULT_STATS},
     info:{...BLANK_INFO},
@@ -120,7 +122,39 @@ class Editor extends Component {
   root = null; drawing = false; useBg = false; pickMode = null; cvs = []; layerRefs = []; paintedSlot = -1;
   get cv() { return this.cvs[this.activeIdx()] || null; }
   setRoot = (el) => { this.root = el; };
-  componentDidMount() { if (this.root) this.root.focus({preventScroll:true}); this.autoLoad(); }
+  componentDidMount() { if (this.root) this.root.focus({preventScroll:true}); this.autoLoad(); document.addEventListener("keydown", this.onTypeSound, true); document.addEventListener("pointerdown", this.onClickSound, true); }
+  componentWillUnmount() { document.removeEventListener("keydown", this.onTypeSound, true); document.removeEventListener("pointerdown", this.onClickSound, true); }
+  // ---------- 타자 소리 ----------
+  toggleSound = () => { const on = !this.state.soundOn; this.setState({ soundOn: on }); try { localStorage.setItem("woh-sound", on ? "on" : "off"); } catch (e) {} };
+  loadSounds() {
+    if (this.snd) return; const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    const ctx = new AC(); this.snd = { ctx, bufs: [], clicks: [], last: -1, lastC: -1 };
+    const get = (url, list) => fetch(url).then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+      .then(b => new Promise((res, rej) => ctx.decodeAudioData(b, res, rej))).then(buf => { list.push(buf); }).catch(() => {});
+    for (let i = 1; i <= CLICK_SOUND_COUNT; i++) get("click-" + i + ".mp3", this.snd.clicks);
+    for (let i = 1; i <= KEY_SOUND_COUNT; i++) {
+      fetch("keypress-" + String(i).padStart(2, "0") + ".wav").then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+        .then(b => new Promise((res, rej) => ctx.decodeAudioData(b, res, rej))).then(buf => { this.snd.bufs.push(buf); }).catch(() => {});
+    }
+  }
+  playBuf(list, lastKey, vol) { const S = this.snd; if (!S || !list.length) return; if (S.ctx.state === "suspended") S.ctx.resume();
+    let i = Math.floor(Math.random() * list.length); if (i === S[lastKey] && list.length > 1) i = (i + 1) % list.length; S[lastKey] = i;
+    const src = S.ctx.createBufferSource(); src.buffer = list[i]; src.playbackRate.value = 0.96 + Math.random() * 0.08;
+    const g = S.ctx.createGain(); g.gain.value = vol; src.connect(g).connect(S.ctx.destination); src.start(); }
+  onClickSound = (e) => {
+    if (!this.state.soundOn) return; this.loadSounds();
+    if (e.button !== 0 || !e.target.closest || !e.target.closest("button, select, a[href], [role=menuitem], input[type=checkbox], input[type=radio], input[type=range]")) return;
+    this.playBuf(this.snd ? this.snd.clicks : [], "lastC", 0.6 + Math.random() * 0.1);
+  };
+  onTypeSound = (e) => {
+    if (!this.state.soundOn || e.repeat || ["Shift","Control","Alt","Meta","CapsLock","OS","Fn","HangulMode","HanjaMode"].includes(e.key)) return;
+    this.loadSounds(); const S = this.snd; if (!S || !S.bufs.length) return;
+    if (S.ctx.state === "suspended") S.ctx.resume();
+    let i = Math.floor(Math.random() * S.bufs.length); if (i === S.last && S.bufs.length > 1) i = (i + 1) % S.bufs.length; S.last = i;
+    const src = S.ctx.createBufferSource(); src.buffer = S.bufs[i]; src.playbackRate.value = 0.94 + Math.random() * 0.12;
+    const g = S.ctx.createGain(); g.gain.value = (e.key === " " || e.key === "Enter" || e.key === "Backspace" ? 0.75 : 0.55) + Math.random() * 0.1;
+    src.connect(g).connect(S.ctx.destination); src.start();
+  };
   setLogBox = (el) => { this.logBox = el; if (el) el.scrollTop = el.scrollHeight; };
   componentDidUpdate() {
     if (this.paintedSlot !== this.state.slot) this.paintLayers();
@@ -288,7 +322,7 @@ class Editor extends Component {
     const hex = hsv2hex(h, s, v);
     this.setState(st => ({ h, s, v, color: hex, colorName: hex.toUpperCase(), tool: st.tool === "eraser" || st.tool === "picker" ? "pencil" : st.tool }));
   }
-  statRow(i) { const [k,ab,ko] = STATS[i]; return { abbr: ab, ko, tip: k === "luck" ? "운 판정에 쓰입니다. 게임 화면에는 표시되지 않는 숨은 능력치라 초상화 밖에 따로 두었습니다." : "이벤트 판정 결과와 일부 전투 행동 속도에 영향을 줍니다.", val: this.state.stats[k],
+  statRow(i) { const [k,ab,ko] = STATS[i]; return { abbr: ab, ko, tip: k === "luck" ? "게임 화면에는 표시되지 않는 능력치입니다." : "이벤트 판정 결과와 일부 전투 행동 속도에 영향을 줍니다.", val: this.state.stats[k],
     dec: () => this.setState(x => ({ stats: {...x.stats, [k]: Math.max(1, x.stats[k]-1)} })),
     inc: () => this.setState(x => ({ stats: {...x.stats, [k]: Math.min(10, x.stats[k]+1)} })) }; }
   measurePack(id, el) {
@@ -557,7 +591,7 @@ class Editor extends Component {
       applyNum: () => setB({ t: st.bonusCat, v: Number(st.numVals[st.bonusCat]) || 0 }),
       bonusItems: list.map(x => { const on = cur && cur.t === x.cat && cur.en === x.en; const key = x.cat + "|" + x.en; const pre = !isAll ? "" : x.cat === "item" ? "아이템" : x.cat === "injury" ? "부상" : (x.cat === "spell" && !x.sub.includes("주문")) ? "주문" : ""; const sub0 = pre ? pre + " · " + x.sub : x.sub;
         const locked = x.lock && !st.unlocked[key]; const why = lockWhy(x);
-        const col = locked ? { bg: c.ink, fg: c.panel } : inv(on);
+        const col = locked ? { bg: "color-mix(in srgb, " + c.mid + " 32%, " + c.paper + ")", fg: "color-mix(in srgb, " + c.ink + " 60%, " + c.mid + ")" } : inv(on);
         return { ko: x.ko, sub: locked ? (isAll ? catKo(x.cat) + " · " : "") + "잠김 · " + why : (x.lock ? "해금됨 · " + sub0 : sub0), locked, ...col,
           border: on ? "3px solid " + c.ink : (locked ? "1px solid " + c.mid : "1px solid " + c.ink),
           pick: () => locked ? this.setState({ confirm: { cat: x.cat, en: x.en, ko: x.ko, why, cond: x.cond || "기본 캐릭터" }, tip: null }) : setB({ t: x.cat, en: x.en }),
@@ -630,7 +664,7 @@ class Editor extends Component {
       newCharacter: this.newCharacter, loadSample: this.loadSample,
       langKo: () => this.setState({ exportLang: "ko" }), langEn: () => this.setState({ exportLang: "en" }),
       lkO: { on: st.exportLang !== "en", ...inv(st.exportLang !== "en") }, lEn: { on: st.exportLang === "en", ...inv(st.exportLang === "en") }, setLogBox: this.setLogBox, rootCls: st.tipsOff ? "tips-off" : "", tipsOff: st.tipsOff,
-      toggleTips: () => this.setState(x => ({ tipsOff: !x.tipsOff })), tipBtn: { label: st.tipsOff ? "? 설명 켜기" : "? 설명 끄기", ...inv(st.tipsOff) }, undo: this.undo, redo: this.redo, setRoot: this.setRoot, onKey: this.onKey,
+      toggleTips: () => this.setState(x => ({ tipsOff: !x.tipsOff })), toggleSound: this.toggleSound, soundOff: !st.soundOn, sndBtn: { label: st.soundOn ? "소리 끄기" : "소리 켜기", ...inv(!st.soundOn) }, tipBtn: { label: st.tipsOff ? "? 설명 켜기" : "? 설명 끄기", ...inv(st.tipsOff) }, undo: this.undo, redo: this.redo, setRoot: this.setRoot, onKey: this.onKey,
       filters: Object.keys(FILTERS).map(k => ({ label: FILTERS[k].label, ...inv(st.filter === k), pick: () => { this.setState({ filter:k }); this.log("필터를 '" + FILTERS[k].label + "'(으)로 바꾸었습니다. 필터 색감은 실제 인게임과 다를 수 있습니다.", false); } })),
       tools: TOOLS.map(t => { const on = t.id === "mirror" ? st.mirror : st.tool === t.id; return { ...t, ...inv(on),
         pick: () => t.id === "mirror" ? this.setState(x => ({ mirror: !x.mirror })) : this.setState({ tool: t.id }) }; }),
@@ -701,7 +735,7 @@ class Editor extends Component {
       ...this.bonusVals(st, inv, c),
       perkLines: [pa, pb].filter(Boolean).flatMap(p => [p[2], p[3]]).map(t => { const i = t.indexOf(":"); return { name: t.slice(0,i), eff: t.slice(i+1) }; }),
       sta: st.active.low_stamina ? 9 : 17, rea: st.active.low_reason ? 9 : 16,
-      leftStats: [0,1,2].map(i => this.statRow(i)), rightStats: [4,3].map(i => this.statRow(i)), luck: this.statRow(5),
+      leftStats: [0,1,2,5].map(i => this.statRow(i)), rightStats: [4,3].map(i => this.statRow(i)),
       fnd: [st.bonusA, st.bonusB].reduce((a, b) => a + (b && b.t === "funds" ? (Number(b.v) || 0) : 0), 0),
       statSum: sum,
       outfitA: () => this.setState({ outfit:"a", underWhich:"a" }), outfitB: () => this.setState({ outfit:"b", underWhich:"b" }),
@@ -754,6 +788,7 @@ ${(v.importItems || []).map((m, $index) => html`
 <span style="width:2px;height:20px;background:${v.c.ink};margin:0 2px"></span>
 <button type="button" onClick=${v.undo} title="되돌리기 (Ctrl+Z)" style="height:24px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};padding:0 6px;cursor:pointer">↶ 되돌리기 ^Z</button>
 <button type="button" onClick=${v.redo} title="다시하기 (Ctrl+Y)" style="height:24px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};padding:0 6px;cursor:pointer">↷ 다시하기 ^Y</button>
+<button type="button" onClick=${v.toggleSound} aria-pressed=${v.soundOff} title="키보드를 칠 때와 단추를 누를 때 소리를 냅니다" style="height:24px;border:2px solid ${v.c.ink};padding:0 8px;cursor:pointer;background:${v.sndBtn.bg};color:${v.sndBtn.fg}">${v.sndBtn.label}</button>
 <button type="button" onClick=${v.toggleTips} aria-pressed=${v.tipsOff} style="height:24px;border:2px solid ${v.c.ink};padding:0 8px;cursor:pointer;background:${v.tipBtn.bg};color:${v.tipBtn.fg}">${v.tipBtn.label}</button>
 <span style="flex-grow:1"></span>
 <div class="tip-wrap"><span>필터</span><div class="tip bl" role="tooltip" style="width:240px"><b>게임 색상 필터 미리보기</b><br />게임 옵션의 색상 필터를 씌워 봅니다. 그림 속 #FF40FE 마젠타는 필터마다 포인트 색으로 바뀝니다. 필터 색감은 실제 인게임과 다를 수 있습니다.</div></div>
@@ -1061,7 +1096,6 @@ ${(v.perkLines || []).map((p, $index) => html`
 
 <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:6px 0 8px;gap:4px;background:${v.c.paper}">
 <div style="width:394px;display:flex;align-items:center;gap:4px;font-size:11px">
-<div class="tip-wrap" style="align-items:center;gap:2px;height:22px;border:2px solid ${v.c.ink};background:${v.c.panel};padding:0 3px"><span style="font-weight:700">운 LCK:${v.luck.val}</span><button type="button" onClick=${v.luck.dec} aria-label="운 낮추기" style="width:16px;height:16px;line-height:12px;border:1px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};cursor:pointer;padding:0">-</button><button type="button" onClick=${v.luck.inc} aria-label="운 올리기" style="width:16px;height:16px;line-height:12px;border:1px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};cursor:pointer;padding:0">+</button><div class="tip b" role="tooltip"><b>운 (LUCK)</b><br />${v.luck.tip}</div></div>
 <div class="tip-wrap" style="flex-grow:1"><span>합계 ${v.statSum} (권장 39)</span><div class="tip l" role="tooltip"><b>능력치 합계</b><br />커뮤니티 모딩 가이드는 여섯 능력치 합을 39 안팎, 운은 6으로 맞추길 권합니다. 해금 캐릭터 중엔 예외도 있습니다.</div></div>
 <button type="button" onClick=${v.outfitA} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.oa.bg};color:${v.oa.fg}">의상 A</button>
 <button type="button" onClick=${v.outfitB} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.ob.bg};color:${v.ob.fg}">의상 B</button>
