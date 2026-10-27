@@ -108,7 +108,7 @@ class Editor extends Component {
     mode:"info", slot:4, zoom:null, panMode:false, filter:"orig", tool:"pencil",
     color:"#ff40fe", colorName:"포인트 #FF40FE", color2:"#ffffff", color2Name:"흰색 255", h:300, s:0.75, v:1,
     mirror:false, under:true, underPct:30, underWhich:"a", live:{}, warn:{}, active:{}, outfit:"a",
-    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, itoPick:null, pathMap:{},
+    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, exportAsk:false, itoPick:null, pathMap:{},
     bonusA:null, bonusB:null, bonusTarget:"a", bonusCat:"all", bonusQuery:"", numVals:{funds:5,doom:5,bullets:3,cigarettes:5}, perkView:"packs", tip:null, unlocked:{}, confirm:null,
     stats:{...DEFAULT_STATS},
     info:{...BLANK_INFO},
@@ -507,10 +507,11 @@ class Editor extends Component {
   }
 
   // ---------- zip 내보내기 ----------
-  exportZip = async () => {
+  exportZip = async (force) => {
     const st = this.state; const name = st.folder.slice(FOLDER_PREFIX.length);
+    if (force !== true && name && (!st.packA || !st.packB || !st.bonusA || !st.bonusB)) { this.setState({ exportAsk: true }); return; }
+    if (this.state.exportAsk) this.setState({ exportAsk: false });
     if (!name) { this.log("폴더 이름이 비어 있습니다. 위쪽 '폴더' 칸에 캐릭터 이름을 적어주세요.", true); return; }
-    if (!st.packA || !st.packB) { this.log("퍽팩 2개를 모두 골라야 내보낼 수 있습니다. ④ 퍽·보너스에서 골라주세요.", true); return; }
     if (!st.info.name) this.log("이름(name)이 비어 있습니다. 그대로 내보냅니다.", true);
     if (!st.live.portrait_b) this.log("초상화 B가 비어 있습니다. 게임에서 두 번째 의상을 볼 때 종료될 수 있습니다.", true);
     if (typeof JSZip === "undefined") { this.log("zip 내려받기는 실제 사이트에서 동작합니다. (시안 화면에서는 꺼져 있습니다)", true); return; }
@@ -575,6 +576,8 @@ class Editor extends Component {
     const setB = (val) => { const other = tgt === "a" ? "bonusB" : "bonusA";
       this.setState(x => ({ [tgt === "a" ? "bonusA" : "bonusB"]: val, bonusTarget: tgt === "a" && !x.bonusB ? "b" : x.bonusTarget }));
       this.log("보너스 " + tgt.toUpperCase() + "에 넣었습니다: " + this.bonInfo(val).label, false); };
+    const same = (b, x) => b && b.t === x.cat && b.en === x.en;
+    const clearB = (slot) => { const k = slot === "a" ? "bonusA" : "bonusB"; if (!st[k]) return; this.setState({ [k]: null, bonusTarget: slot }); this.log("보너스 " + slot.toUpperCase() + "를 비웠습니다.", false); };
     const slotBtn = (slot, key) => { const b = this.bonInfo(st[key]); const on = tgt === slot;
       return { slot: slot.toUpperCase(), label: b.label, on, ...inv(on), border: on ? "3px solid " + c.ink : "2px solid " + c.ink,
         pick: () => this.setState({ bonusTarget: slot }),
@@ -594,7 +597,7 @@ class Editor extends Component {
         const col = locked ? { bg: "color-mix(in srgb, " + c.mid + " 32%, " + c.paper + ")", fg: "color-mix(in srgb, " + c.ink + " 60%, " + c.mid + ")" } : inv(on);
         return { ko: x.ko, sub: locked ? (isAll ? catKo(x.cat) + " · " : "") + "잠김 · " + why : (x.lock ? "해금됨 · " + sub0 : sub0), locked, ...col,
           border: on ? "3px solid " + c.ink : (locked ? "1px solid " + c.mid : "1px solid " + c.ink),
-          pick: () => locked ? this.setState({ confirm: { cat: x.cat, en: x.en, ko: x.ko, why, cond: x.cond || "기본 캐릭터" }, tip: null }) : setB({ t: x.cat, en: x.en }),
+          pick: () => locked ? this.setState({ confirm: { cat: x.cat, en: x.en, ko: x.ko, why, cond: x.cond || "기본 캐릭터" }, tip: null }) : (same(st.bonusA, x) ? clearB("a") : same(st.bonusB, x) ? clearB("b") : setB({ t: x.cat, en: x.en })),
           enter: (e) => locked ? this.showTip(e.currentTarget, x.ko, "잠김 · " + why, "효과는 해금 전까지 숨겨 둡니다. 클릭하면 사용 여부를 묻습니다.")
                                : this.showTip(e.currentTarget, x.ko, sub0 + " · " + x.en, x.eff || "효과 정보가 없습니다.") }; }),
       hasConfirm: !!st.confirm, confirmName: st.confirm ? st.confirm.ko : "",
@@ -659,7 +662,7 @@ class Editor extends Component {
       onDragOver: this.onDragOver, onDragLeave: this.onDragLeave, onDrop: this.onDrop, dragOver: !!st.dragOver,
       itoPick: !!st.itoPick, itoPickCount: st.itoPick ? st.itoPick.itos.length : 0,
       itoPickList: st.itoPick ? st.itoPick.itos.map((f, i) => ({ name: (f.dir ? f.dir + "/" : "") + f.name, go: () => this.pickIto(i) })) : [],
-      cancelPick: () => this.setState({ itoPick: null }),
+      cancelPick: () => this.setState({ itoPick: null }), exportAsk: !!st.exportAsk, askYes: () => this.exportZip(true), askNo: () => this.setState({ exportAsk: false }),
       setWorkInput: this.setWorkInput, openWork: this.openWork, onWorkFile: this.onWorkFile, saveWork: this.saveWork, exportZip: this.exportZip,
       newCharacter: this.newCharacter, loadSample: this.loadSample,
       langKo: () => this.setState({ exportLang: "ko" }), langEn: () => this.setState({ exportLang: "en" }),
@@ -970,7 +973,7 @@ ${(v.hasConfirm) ? html`
 </div>
 </div>
 ` : null}
-<div style="display:flex;align-items:center;gap:12px;background:${v.c.ink};color:${v.c.panel};padding:8px 10px;flex-shrink:0"><span style="font-weight:700;flex-shrink:0">시작 보너스</span><span>보너스는 총 2개 선택 가능합니다. 바꿀 칸을 고른 뒤 아래 목록에서 선택해주세요.</span></div>
+<div style="display:flex;align-items:center;gap:12px;background:${v.c.ink};color:${v.c.panel};padding:8px 10px;flex-shrink:0"><span style="font-weight:700;flex-shrink:0">시작 보너스</span><span>보너스는 최대 2개까지 선택 가능합니다. 없어도 게임에 지장은 없습니다.</span></div>
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex-shrink:0">
 ${(v.bonusSlots || []).map((b, $index) => html`
 <button type="button" onClick=${b.pick} onMouseEnter=${b.enter} onMouseLeave=${v.hideTip} aria-pressed=${b.on} style="height:34px;display:flex;align-items:center;gap:8px;text-align:left;padding:0 8px;cursor:pointer;border:${b.border};background:${b.bg};color:${b.fg}"><span style="font-weight:700;flex-shrink:0">보너스 ${b.slot}</span><span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${b.label}</span></button>
@@ -1001,7 +1004,7 @@ ${(v.bonusItems || []).map((it, $index) => html`
 ` : null}
 ${(v.isPerkPacks) ? html`
 <div style="flex-grow:1;min-height:0;overflow-y:auto;border:2px solid ${v.c.ink};background:${v.c.panel};padding:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-content:start">
-<div style="grid-column:span 3;display:flex;align-items:center;gap:12px;background:${v.c.ink};color:${v.c.panel};padding:8px 10px"><span style="font-weight:700;flex-shrink:0">선택 ${v.packCount}/2</span><span>팩은 총 2개 선택 가능합니다. 좌측 화면을 참고하여 선택해주세요.</span></div>
+<div style="grid-column:span 3;display:flex;align-items:center;gap:12px;background:${v.c.ink};color:${v.c.panel};padding:8px 10px"><span style="font-weight:700;flex-shrink:0">선택 ${v.packCount}/2</span><span>퍽은 최대 2개까지 선택 가능합니다. 없어도 게임에 지장은 없습니다.</span></div>
 ${(v.packCards || []).map((p, $index) => html`
 <div class="pk-card" style="border:${p.border};padding:6px;height:150px;display:flex;flex-direction:column;gap:4px;background:${p.bg}">
 <div style="font-weight:700">${p.ko} <span style="font-weight:400;font-size:11px">${p.tagline}</span></div>
@@ -1137,6 +1140,14 @@ ${(v.statusToggles || []).map((s, $index) => html`
 ${(v.dragOver) ? html`
 <div aria-hidden="true" style="position:absolute;inset:0;z-index:95;pointer-events:none;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center">
 <div style="padding:18px 28px;background:${v.c.ink};color:${v.c.panel};border:2px solid ${v.c.panel};outline:2px solid ${v.c.ink};box-shadow:6px 6px 0 ${v.c.mid};font-size:14px;line-height:22px;text-align:center"><b>여기에 놓으면 불러옵니다</b><br /><span style="font-size:11px">폴더 · zip · .ito · 그림(png)</span></div>
+</div>
+` : null}
+${(v.exportAsk) ? html`
+<div role="alertdialog" aria-label="내보내기 확인" style="position:absolute;inset:0;z-index:96;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center">
+<div style="width:360px;background:${v.c.panel};color:${v.c.ink};border:2px solid ${v.c.ink};box-shadow:6px 6px 0 ${v.c.mid}">
+<div style="padding:14px 14px 12px;font-size:13px;line-height:19px">퍽 팩 혹은 보너스가 없습니다. 이대로 내보낼까요?</div>
+<div style="display:flex;border-top:2px solid ${v.c.ink}"><button type="button" onClick=${v.askNo} style="flex:1;height:30px;border:0;border-right:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer">취소</button><button type="button" onClick=${v.askYes} style="flex:1;height:30px;border:0;background:${v.c.ink};color:${v.c.panel};cursor:pointer;font-weight:700">내보내기</button></div>
+</div>
 </div>
 ` : null}
 ${(v.itoPick) ? html`
