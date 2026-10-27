@@ -1,0 +1,12 @@
+캐릭터 공방 — World of Horror 커스텀 캐릭터 편집기
+
+비상업적 팬 제작 모딩 사이트입니다.
+World of Horror는 panstasz(Paweł Koźmiński)와 Ysbryd Games의 작품이며, 이 사이트는 그들과 관계가 없습니다.
+공식 로고·게임 원본 파일을 싣지 않습니다. 아이템·퍽 이름은 원활한 모딩을 위해 게임 공식 표기를 따랐습니다.
+작업 내용은 사용자의 브라우저 안에서만 처리되며 서버로 보내지 않습니다.
+
+사용한 오픈 소스
+- Galmuri 글꼴 (Lee Minseo) — SIL Open Font License 1.1 → LICENSE-Galmuri.txt
+- Preact 10.24.3 — MIT → LICENSE-Preact.txt
+- htm 3.1.1 — Apache License 2.0 → LICENSE-htm.txt
+- JSZip 3.10.1 — MIT (또는 GPLv3 중 선택, 여기서는 MIT) → LICENSE-JSZip.txt
