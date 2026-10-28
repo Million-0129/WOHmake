@@ -25,7 +25,7 @@ const SAVE_FIELDS = ["info","stats","packA","packB","bonusA","bonusB","folder","
 const SLOTS = [
   {key:"sprite_icon",label:"아이콘",w:18,h:18,src:null,group:"sprite",note:"18×18. 가장자리 투명 처리가 적용되지 않습니다.",tip:"캐릭터 선택 화면에 쓰이는 작은 아이콘입니다. 유일하게 가장자리 투명 처리가 적용되지 않습니다."},
   {key:"sprite_chibi",label:"치비",w:105,h:57,src:null,group:"sprite",note:"아래 가장자리도 투명 처리됩니다. 빨간 점선 위로 띄워 그려주세요.",tip:"장소를 조사하러 나갈 때 나오는 작은 캐릭터입니다. 아래 가장자리도 투명 처리되니 몇 픽셀 띄워 그려주세요."},
-  {key:"sprite_back",label:"뒷모습",w:256,h:288,src:null,group:"sprite",note:"256×288",tip:"미스터리 게시판을 볼 때와 등대 위에 설 때 보이는 뒷모습입니다."},
+  {key:"sprite_back",label:"뒷모습",w:256,h:288,src:null,group:"sprite",note:"256×288",tip:"미스터리 게시판을 볼 때 보이는 뒷모습입니다."},
   {key:"sprite_house",label:"선택 화면 전신",w:171,h:214,src:null,group:"sprite",note:"세로 200px 미만이면 게임이 윗부분을 복사해 채웁니다.",tip:"집(아파트) 한가운데 서 있는 모습이자 캐릭터 선택 화면의 전신입니다. 세로 200px 미만이면 게임이 윗부분을 복사해 채웁니다."},
   {key:"portrait_a",label:"초상화 A",w:195,h:164,src:null,group:"sprite",note:"게임 오른쪽 패널과 옷장 거울에 표시됩니다.",tip:"오른쪽 능력치 패널과 옷장 거울에 나오는 기본 초상화입니다."},
   {key:"portrait_b",label:"초상화 B",w:195,h:164,src:null,group:"sprite",note:"비워 두면 두 번째 의상을 볼 때 게임이 종료됩니다.",tip:"옷장에서 고를 수 있는 두 번째 의상입니다. 비워 두면 두 번째 의상을 볼 때 게임이 종료됩니다."},
@@ -36,7 +36,7 @@ const SLOTS = [
   {key:"crestfallen_mask",label:"낙담한 가면",btn:"낙담한\n가면",w:195,h:164,src:null,group:"status",note:"CRESTFALLEN MASK 장착",tip:"C슬롯 장비 '낙담한 가면'을 착용하면 표시됩니다. 게임을 진행하며 얻을 수 있는 장비입니다."},
   {key:"cursed_signs",label:"저주의 징조",btn:"저주의\n징조",w:195,h:164,src:null,group:"status",note:"CURSED SIGNS 저주",tip:"저주 '저주의 징조'에 걸리면 표시됩니다."},
   {key:"broken_nose",label:"부러진 코",btn:"부러진\n코",w:195,h:164,src:null,group:"status",note:"BROKEN NOSE 부상",tip:"경상 '부러진 코'를 입으면 표시됩니다."},
-  {key:"insmasu_look",label:"인스마스의 형상",btn:"인스마스의\n형상",w:195,h:164,src:null,group:"status",note:"INSMASU CURSE 저주",tip:"'인스마스의 형상' 상태일 때 표시됩니다."},
+  {key:"insmasu_look",label:"인스마스의 형상",btn:"인스마스의\n형상",w:195,h:164,src:null,group:"status",note:"INSMASU LOOK 상태",tip:"'인스마스의 형상' 상태일 때 표시됩니다."},
   {key:"slit_mouth",label:"찢어진 입",btn:"찢어진\n입",w:195,h:164,src:null,group:"status",note:"SLIT MOUTH 부상",tip:"경상 '찢어진 입'을 입으면 표시됩니다."},
   {key:"hunger",label:"허기",btn:"허기",w:195,h:164,src:null,group:"status",note:"HUNGER 저주",tip:"저주 '허기'에 걸리면 표시됩니다."}
 ];
@@ -70,6 +70,34 @@ const NUM_DESC = {funds:"시작 자금이 그만큼 늘어납니다. 음수도 �
 const STATS = [["strength","STR","힘 (STR)"],["dexterity","DEX","민첩 (DEX)"],["perception","PER","인지 (PER)"],["charisma","CHR","매력 (CHR)"],["knowledge","KNW","지식 (KNW)"],["luck","LCK","운 (LUCK)"]];
 // 공방 종류별 고정 폴더 접두사: 캐릭터 character_, 에너미 enemy_, 미스터리 mystery_
 const FOLDER_PREFIX = "character_";
+const APP_VER = "v1.1"; const APP_DATE = "2026.10.28";
+const MAX_LAYERS = 5;
+const BAYER = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+const TONES = [[2,"12%"],[4,"25%"],[8,"50%"],[12,"75%"]];
+const SIZES = [1,2,3,4,6,8];
+const SHAPES = [["square","네모","■"],["triangle","세모","▲"],["circle","원형","●"]];
+const TONE_KINDS = [["dot","망점","격자로 고르게 흩어진 점입니다. 50%는 체크 무늬입니다."],["zigzag","지그재그","가로로 꺾여 흐르는 선입니다."],
+  ["round","원형","동그란 점이 격자로 놓이는 만화 스크린톤입니다."],["hatch","해치","비스듬한 평행선입니다."],["air","에어브러시","그림판의 분무기처럼 점을 흩뿌립니다. 문지를수록 진해집니다."]];
+// 브러시 모양: n×n 칸 안에서 칠할 칸인지
+function inShape(shape, n, bx, by) {
+  if (n <= 2 || shape === "square") return true;
+  const c = (n - 1) / 2;
+  if (shape === "circle") { const r = n / 2; return (bx - c) * (bx - c) + (by - c) * (by - c) <= r * r - 0.25; }
+  return Math.abs(bx + 0.5 - n / 2) <= (by + 1) / 2;   // 세모(위가 뾰족)
+}
+// 톤: 이 칸을 칠할지 (lv = 16분의 농도)
+const LINE_T = { 2: [8, 1], 4: [4, 1], 8: [4, 2], 12: [4, 3] };
+// 원형 톤: [칸 크기, 반지름², 반전] — 도트에서 둥글게 보이도록 고른 값. 75%는 검은 바탕에 흰 원
+const ROUND_T = { 2: [8, 2.5, false], 4: [8, 6.5, false], 8: [10, 12.5, false], 12: [8, 6.5, true] };
+function inTone(kind, lv, x, y, n) {
+  const f = lv / 16;
+  if (kind === "zigzag") { const [P, t] = LINE_T[lv] || [4, 2]; const m = x % 4; const tri = m < 2 ? m : 4 - m; return ((y - tri) % P + P) % P < t; }
+  if (kind === "hatch") { const [P, t] = LINE_T[lv] || [4, 2]; return (x + y) % P < t; }
+  if (kind === "round") { const [cell, r2, inv] = ROUND_T[lv] || ROUND_T[8]; const sx = Math.floor(y / cell) % 2 ? cell / 2 : 0; const c = (cell - 1) / 2;
+    const dx = ((x + sx) % cell) - c, dy = (y % cell) - c; const inside = dx * dx + dy * dy <= r2; return inv ? !inside : inside; }
+  if (kind === "air") return Math.random() < f * 0.6 / Math.max(1, n);
+  return BAYER[y & 3][x & 3] < lv;
+}
 const KEY_SOUND_COUNT = 19;
 const CLICK_SOUND_COUNT = 2;
 const FILTERS = {
@@ -86,10 +114,11 @@ const TOOLS = [
   {id:"eraser",name:"지우개",glyph:"□",key:"E",desc:"투명(#40FF40)으로 지웁니다."},
   {id:"fill",name:"채우기",glyph:"◧",key:"G",desc:"같은 색으로 이어진 영역을 한 번에 칠합니다."},
   {id:"picker",name:"스포이트",glyph:"◉",key:"I",desc:"찍은 점의 색을 앞색으로 가져옵니다. 캔버스에서 우클릭해도 됩니다."},
-  {id:"dither",name:"무늬 붓",glyph:"▒",key:"D",desc:"체크 무늬로 한 칸씩 건너 칠합니다. 망점 질감을 낼 때 씁니다."},
+  {id:"dither",name:"톤 붓",glyph:"▒",key:"D",desc:"톤으로 칠합니다. 종류는 왼쪽 목록 아래에서, 농도는 캔버스 위 막대에서 고릅니다."},
   {id:"mirror",name:"좌우 대칭",glyph:"⇔",key:"M",desc:"켜 두면 반대쪽에도 똑같이 그려집니다. 다른 도구와 함께 쓰는 스위치입니다."},
   {id:"line",name:"직선",glyph:"╱",key:"L",desc:"누른 곳에서 뗀 곳까지 곧은 선을 긋습니다."},
-  {id:"rect",name:"사각형",glyph:"▭",key:"U",desc:"끌어서 사각형 테두리를 그립니다."}
+  {id:"rect",name:"사각형",glyph:"▭",key:"U",desc:"끌어서 사각형 테두리를 그립니다."},
+  {id:"move",name:"레이어 이동",glyph:"＋",key:"K",desc:"지금 고른 레이어의 그림을 끌어서 옮깁니다. 방향키로 1칸, Shift+방향키로 8칸씩 옮길 수 있습니다. 캔버스 밖으로 나간 부분은 지워집니다."}
 ];
 const STEPS = [["info","① 기본 정보","캐릭터 이름, 제작자, 선택 화면에 나오는 꼬리표와 소개 글을 적습니다."],["sprite","② 스프라이트","아이콘, 치비, 뒷모습, 전신, 초상화 A·B를 그립니다."],["status","③ 상태 덧그림","체력·이성이 낮거나 가면·부상·저주가 생겼을 때 초상화 위에 겹쳐지는 그림을 그립니다."],["perk","④ 퍽·보너스","캐릭터 고유 퍽팩 2개와, 새 게임 시작 때 받는 보너스 2개를 고릅니다."],["export","⑤ 내보내기",".ito 내용을 확인하고 zip으로 내려받습니다."]];
 const now = () => { const d = new Date(); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,"0")).join(":"); };
@@ -108,14 +137,14 @@ class Editor extends Component {
     mode:"info", slot:4, zoom:null, panMode:false, filter:"orig", tool:"pencil",
     color:"#ff40fe", colorName:"포인트 #FF40FE", color2:"#ffffff", color2Name:"흰색 255", h:300, s:0.75, v:1,
     mirror:false, under:true, underPct:30, underWhich:"a", live:{}, warn:{}, active:{}, outfit:"a",
-    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, exportAsk:false, big:0, itoPick:null, pathMap:{},
+    folder:"character_", packA:null, packB:null, exportLang:"ko", extraIto:"", soundOn: (() => { try { return localStorage.getItem("woh-sound") !== "off"; } catch (e) { return true; } })(), importMenu:false, dragOver:false, exportAsk:false, big:0, brushSize:1, pressOn:true, toneLv:8, brushShape:"square", toneKind:"dot", itoPick:null, pathMap:{},
     bonusA:null, bonusB:null, bonusTarget:"a", bonusCat:"all", bonusQuery:"", numVals:{funds:5,doom:5,bullets:3,cigarettes:5}, perkView:"packs", tip:null, unlocked:{}, confirm:null,
     stats:{...DEFAULT_STATS},
     info:{...BLANK_INFO},
     logs:[
       {t:now(),msg:"비상업적 팬 제작 모딩 사이트입니다.",warn:false},
       {t:now(),msg:"새 캐릭터를 시작합니다. 예시가 필요하면 ① 기본 정보에서 '예시 불러오기'를 눌러주세요.",warn:false},
-      {t:now(),msg:"단축키 안내: Ctrl+Z 되돌리기 · Ctrl+Y 다시하기 · X 앞뒤 색 교체 · 오른쪽 클릭은 스포이트입니다.",warn:false}
+      {t:now(),msg:"단축키 안내: Ctrl+Z 되돌리기 · Ctrl+Y 다시 하기 · X 앞뒤 색 교체 · 오른쪽 클릭은 스포이트입니다.",warn:false}
     ],
     history:[], future:[], over:{}, tipsOff:false, layers:{}, activeLayer:{}
   };
@@ -157,6 +186,7 @@ class Editor extends Component {
   };
   setLogBox = (el) => { this.logBox = el; if (el) el.scrollTop = el.scrollHeight; };
   componentDidUpdate() {
+    if (this.needFit) { this.needFit = false; if (!this.state.zoom && this.zoomBox && this.zoomBox.clientWidth) this.forceUpdate(); }
     if (this.paintedSlot !== this.state.slot) this.paintLayers();
     if (SAVE_FIELDS.some(k => this.state[k] !== this.lastSaved?.[k])) { this.lastSaved = {}; SAVE_FIELDS.forEach(k => { this.lastSaved[k] = this.state[k]; }); this.autoSave(); }
     if (this.logBox && this.logCount !== this.state.logs.length) { this.logCount = this.state.logs.length; this.logBox.scrollTop = this.logBox.scrollHeight; }
@@ -184,7 +214,7 @@ class Editor extends Component {
     const before = this.stackOf(this.state.slot);
     let L = before.layers.map(x => ({ ...x }));
     let a = this.activeIdx();
-    if (kind === "add") { if (L.length >= 3) { this.log("레이어는 3개까지 만들 수 있습니다.", true); return; }
+    if (kind === "add") { if (L.length >= MAX_LAYERS) { this.log("레이어는 " + MAX_LAYERS + "개까지 만들 수 있습니다.", true); return; }
       const n = Math.max(0, ...L.map(x => Number(x.name.replace(/\D/g, "")) || 0)) + 1;
       L = [...L.slice(0, a + 1), { name: "레이어 " + n, visible: true, data: "" }, ...L.slice(a + 1)]; a = a + 1; }
     else if (kind === "del") { if (L.length <= 1) { this.log("마지막 레이어는 지울 수 없습니다.", true); return; }
@@ -198,7 +228,7 @@ class Editor extends Component {
       ...(undoable ? { history: [...st.history, before].slice(-50), future: [] } : {}) }),
       () => this.paintLayers().then(() => this.refreshComposite()));
   }
-  fitZoom(s) { const b = this.zoomBox; const w = b ? b.clientWidth - 16 : 420, h = b ? b.clientHeight - 16 : 440;
+  fitZoom(s) { let b = this.zoomBox; if (b && !b.clientWidth) { b = null; this.needFit = true; } const w = b ? b.clientWidth - 16 : 420, h = b ? b.clientHeight - 16 : 440;
     return Math.max(1, Math.min(16, Math.floor(Math.min(w / s.w, h / s.h)))); }
   setZoomBox = (el) => { this.zoomBox = el; if (el && !el.__wheelBound) { el.__wheelBound = true;
     const flash = () => { el.classList.add("show-sb"); clearTimeout(el.__sbT); el.__sbT = setTimeout(() => el.classList.remove("show-sb"), 1500); };
@@ -221,15 +251,42 @@ class Editor extends Component {
   pos(e) { const cv = this.cv || this.cvs.find(Boolean); const r = cv.getBoundingClientRect(); const s = SLOTS[this.state.slot];
     return [Math.floor((e.clientX - r.left) / r.width * s.w), Math.floor((e.clientY - r.top) / r.height * s.h)]; }
   paintColor() { return this.useBg ? this.state.color2 : this.state.color; }
+  brushNow() { const n = this.state.brushSize || 1; const pr = this.press;
+    return pr == null ? n : Math.max(1, Math.min(n, Math.ceil(n * pr))); }
   plot(x, y) {
-    const s = SLOTS[this.state.slot]; const ctx = this.cv.getContext("2d"); const {tool, mirror} = this.state; const color = this.paintColor();
-    const pts = mirror ? [[x,y],[s.w-1-x,y]] : [[x,y]];
-    for (const [px,py] of pts) {
-      if (px < 0 || py < 0 || px >= s.w || py >= s.h) continue;
-      if (tool === "dither" && (px + py) % 2) continue;
-      if (tool === "eraser" || this.penErase || color === null) ctx.clearRect(px,py,1,1); else { ctx.fillStyle = color; ctx.fillRect(px,py,1,1); }
+    const s = SLOTS[this.state.slot]; const ctx = this.cv.getContext("2d"); const {tool, mirror, toneLv} = this.state; const color = this.paintColor();
+    const n = this.brushNow(); const o = Math.floor((n - 1) / 2); const erase = tool === "eraser" || this.penErase || color === null;
+    const shape = this.state.brushShape || "square", kind = this.state.toneKind || "dot";
+    if (!erase) ctx.fillStyle = color;
+    for (let by = 0; by < n; by++) for (let bx = 0; bx < n; bx++) {
+      if (!inShape(shape, n, bx, by)) continue;
+      const qx = x - o + bx, qy = y - o + by; const pts = mirror ? [[qx,qy],[s.w-1-qx,qy]] : [[qx,qy]];
+      for (const [px,py] of pts) {
+        if (px < 0 || py < 0 || px >= s.w || py >= s.h) continue;
+        if (tool === "dither" && !inTone(kind, toneLv || 8, px, py, n)) continue;
+        if (erase) ctx.clearRect(px,py,1,1); else ctx.fillRect(px,py,1,1);
+      }
     }
   }
+  hoverAt(x, y) { const h = this.hoverBox; if (!h) return; if (x == null || ["move","fill","picker"].includes(this.state.tool)) { h.style.display = "none"; return; }
+    const z = this.curZoom || 1; const n = this.brushNow(); const o = Math.floor((n - 1) / 2);
+    h.style.display = "block"; h.style.left = (x - o) * z + "px"; h.style.top = (y - o) * z + "px"; h.style.width = h.style.height = n * z + "px"; }
+  setHoverBox = (el) => { this.hoverBox = el; };
+  tonePreview(kind, on) { this.tpCache = this.tpCache || {}; const key = kind + on + this.state.filter; if (this.tpCache[key]) return this.tpCache[key];
+    if (typeof document === "undefined") return ""; const c = document.createElement("canvas"); c.width = 14; c.height = 12; const x = c.getContext("2d");
+    const F = FILTERS[this.state.filter] || FILTERS.orig; x.fillStyle = on ? F.ink : F.panel; x.fillRect(0, 0, 14, 12); let seed = 7; x.fillStyle = on ? F.panel : F.ink;
+    for (let py = 0; py < 12; py++) for (let px = 0; px < 14; px++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; const keep = kind === "air" ? (seed % 100 < 28) : inTone(kind, 8, px, py, 1); if (keep) x.fillRect(px, py, 1, 1); }
+    return (this.tpCache[key] = c.toDataURL()); }
+  pLeave = () => { if (!this.drawing) this.hoverAt(null); };
+  nudge(dx, dy) { const L = this.slotLayers()[this.activeIdx()]; if (!this.cv || !L) return;
+    if (!L.visible) { this.log("숨긴 레이어는 옮길 수 없습니다. 눈 버튼으로 다시 켜주세요.", true); return; }
+    this.snapshot(); const ctx = this.cv.getContext("2d"); const img = ctx.getImageData(0, 0, this.cv.width, this.cv.height);
+    ctx.clearRect(0, 0, this.cv.width, this.cv.height); ctx.putImageData(img, dx, dy); this.commit(); }
+  clearLayer = () => { const st = this.state; if (st.mode !== "sprite" && st.mode !== "status") return;
+    const L = this.slotLayers(); const i = this.activeIdx(); const cur = L[i];
+    if (!this.cv || !cur) return; if (!cur.visible) { this.log("숨긴 레이어는 지울 수 없습니다. 눈 버튼으로 다시 켜주세요.", true); return; }
+    this.snapshot(); const s2 = SLOTS[st.slot]; this.cv.getContext("2d").clearRect(0, 0, s2.w, s2.h); this.commit();
+    this.log(s2.key + ": '" + cur.name + "'을(를) 모두 지웠습니다. Ctrl+Z로 되돌릴 수 있습니다.", false); };
   flood(x, y) {
     const s = SLOTS[this.state.slot]; const ctx = this.cv.getContext("2d"); const img = ctx.getImageData(0,0,s.w,s.h); const d = img.data;
     const at = (i) => d[i*4]+","+d[i*4+1]+","+d[i*4+2]+","+d[i*4+3]; const start = y*s.w+x; const target = at(start);
@@ -248,23 +305,31 @@ class Editor extends Component {
     if ((this.spaceDown || e.button === 1) && this.zoomBox) { e.preventDefault(); this.panning = { x: e.clientX, y: e.clientY, sl: this.zoomBox.scrollLeft, st: this.zoomBox.scrollTop };
       e.currentTarget.setPointerCapture(e.pointerId); return; }
     const [x,y] = this.pos(e); this.useBg = false; this.penErase = e.pointerType === "pen" && (e.button === 5 || (e.buttons & 32) === 32);
+    this.press = (e.pointerType === "pen" && this.state.pressOn && e.pressure > 0 && this.state.tool !== "line" && this.state.tool !== "rect") ? e.pressure : null;
     if (e.button === 2 || this.state.tool === "picker") { const p = this.composite().getContext("2d").getImageData(x,y,1,1).data;
       const hex = p[3] ? "#" + [p[0],p[1],p[2]].map(v => v.toString(16).padStart(2,"0")).join("") : null; this.setFg(hex); return; }
     const curL = this.slotLayers()[this.activeIdx()];
     if (!this.cv || !curL || !curL.visible) { this.log("숨긴 레이어에는 그릴 수 없습니다. 눈 버튼으로 다시 켜주세요.", true); return; }
     this.snapshot();
     if (this.state.tool === "fill" && !this.penErase) { this.flood(x,y); this.commit(); return; }
+    if (this.state.tool === "move") { const s2 = SLOTS[this.state.slot];
+      this.moving = { x, y, dx: 0, dy: 0, base: this.cv.getContext("2d").getImageData(0, 0, s2.w, s2.h) }; this.drawing = true;
+      e.currentTarget.setPointerCapture(e.pointerId); return; }
     if (this.state.tool === "line" || this.state.tool === "rect") { const s2 = SLOTS[this.state.slot];
       this.shape = { kind: this.state.tool, x, y, base: this.cv.getContext("2d").getImageData(0, 0, s2.w, s2.h) }; this.drawing = true;
       e.currentTarget.setPointerCapture(e.pointerId); this.shapeDraw(x, y); return; }
     this.drawing = true; e.currentTarget.setPointerCapture(e.pointerId); this.plot(x,y); this.last = [x,y];
   };
   pMove = (e) => { if (this.panning) { const b = this.zoomBox; b.scrollLeft = this.panning.sl - (e.clientX - this.panning.x); b.scrollTop = this.panning.st - (e.clientY - this.panning.y); return; }
-    if (!this.drawing) return; const [x,y] = this.pos(e); if (this.shape) { this.shapeDraw(x, y); return; } const [x0,y0] = this.last || [x,y];
+    if (!this.drawing) { const [hx, hy] = this.pos(e); this.press = null; this.hoverAt(hx, hy); return; }
+    const [x,y] = this.pos(e); if (e.pointerType === "pen" && this.press != null && e.pressure > 0) this.press = e.pressure; this.hoverAt(x, y);
+    if (this.moving) { const m = this.moving; const dx = x - m.x, dy = y - m.y; if (dx === m.dx && dy === m.dy) return; m.dx = dx; m.dy = dy;
+      const ctx = this.cv.getContext("2d"); ctx.clearRect(0, 0, this.cv.width, this.cv.height); ctx.putImageData(m.base, dx, dy); return; }
+    if (this.shape) { this.shapeDraw(x, y); return; } const [x0,y0] = this.last || [x,y];
     let dx = Math.abs(x - x0), dy = -Math.abs(y - y0), sx = x0 < x ? 1 : -1, sy = y0 < y ? 1 : -1, err = dx + dy, cx = x0, cy = y0;
     for (let n = 0; n < 2000; n++) { this.plot(cx, cy); if (cx === x && cy === y) break; const e2 = 2 * err; if (e2 >= dy) { err += dy; cx += sx; } if (e2 <= dx) { err += dx; cy += sy; } }
     this.last = [x,y]; };
-  pUp = () => { if (this.panning) { this.panning = null; return; } if (!this.drawing) return; this.drawing = false; this.shape = null; this.commit(); };
+  pUp = () => { if (this.panning) { this.panning = null; return; } if (!this.drawing) return; this.drawing = false; this.shape = null; this.moving = null; this.commit(); };
   noMenu = (e) => e.preventDefault();
   commit() {
     const s = SLOTS[this.state.slot]; const idx = this.activeIdx();
@@ -307,6 +372,11 @@ class Editor extends Component {
     if ((k === "-" || k === "_") && (this.state.mode === "sprite" || this.state.mode === "status")) { this.zoomBy(-1); return; }
     if (k === "0") { this.setState({ zoom: null }); return; }
     if (k === "x") { this.swap(); return; }
+    if (k === "delete") { e.preventDefault(); this.clearLayer(); return; }
+    if (this.state.tool === "move" && ["arrowleft","arrowright","arrowup","arrowdown"].includes(k) && (this.state.mode === "sprite" || this.state.mode === "status")) {
+      e.preventDefault(); const d = e.shiftKey ? 8 : 1; this.nudge(k === "arrowleft" ? -d : k === "arrowright" ? d : 0, k === "arrowup" ? -d : k === "arrowdown" ? d : 0); return; }
+    if (k === "[" || k === "]") { const i = SIZES.indexOf(this.state.brushSize); const cur = i < 0 ? SIZES.findIndex(v => v >= this.state.brushSize) : i;
+      const nx = SIZES[Math.max(0, Math.min(SIZES.length - 1, cur + (k === "]" ? 1 : -1)))]; this.setState({ brushSize: nx }); return; }
     const t = TOOLS.find(x => x.key.toLowerCase() === k);
     if (t) { if (t.id === "mirror") this.setState(x => ({ mirror: !x.mirror })); else this.setState({ tool: t.id }); }
   };
@@ -501,7 +571,7 @@ class Editor extends Component {
       exportLang: [B2.name_a, B2.name_b].some(n => n && /[가-힣]/.test(n)) ? "ko" : (B2.name_a || B2.name_b ? "en" : this.state.exportLang) };
     if (withImages) this.resetTo({ ...patch, live }, ito.name + "을(를) 불러왔습니다. 그림 " + got + "장" + (miss ? ", 찾지 못한 그림 " + miss + "장" : "") + ".");
     else { this.setState({ ...patch, unlocked: {} }); this.log(ito.name + "의 글·능력치·퍽·보너스를 불러왔습니다. 그림은 지금 것을 그대로 둡니다. 그림도 바꾸려면 '그림 불러오기'를 써주세요.", false); }
-    if (missList.length) this.log("경로는 적혀 있으나 찾지 못한 그림: " + missList.slice(0, 5).join(", ") + (missList.length > 5 ? " 외 " + (missList.length - 5) + "장" : "") + ". 빈 칸으로 둡니다.", true);
+    if (missList.length) this.log("경로는 적혀 있으나 찾지 못한 그림: " + missList.slice(0, 5).join(", ") + (missList.length > 5 ? " 외 " + (missList.length - 5) + "장" : "") + ". 빈칸으로 둡니다.", true);
     if (quoteFix) this.log("닫는 따옴표가 빠진 줄이 " + quoteFix + "개 있었습니다. 내보낼 때 바로잡습니다.", true);
     if (extra.length) this.log("편집기가 다루지 않는 섹션(예: [linked_events])은 그대로 보존해 내보냅니다.", false);
   }
@@ -674,7 +744,7 @@ class Editor extends Component {
       titleLine: isDraw ? "Editing: " + s.key.toUpperCase() + " — " + s.label : st.mode === "info" ? "Editing: [character] 기본 정보" : st.mode === "perk" ? (st.perkView === "bonus" ? "Editing: 시작 보너스 [starting_bonus]" : "Editing: 퍽팩 [perkpack_a / perkpack_b]") : "Export: " + st.folder + ".ito",
       titleSize: isDraw ? s.w + "×" + s.h + " · ×" + zoom + (st.zoom ? "" : " (맞춤)") : "", isDrawMode: isDraw, zoomNow: zoom,
       setZoomBox: this.setZoomBox, zoomIn: () => this.zoomBy(1), zoomOut: () => this.zoomBy(-1), zoomFit: () => this.setState({ zoom: null }),
-      onKeyUp: this.onKeyUp, boxCursor: st.panMode ? "grab" : "default",
+      onKeyUp: this.onKeyUp, boxCursor: st.panMode ? "grab" : st.tool === "move" ? "move" : "default",
       steps: STEPS.map(([id,label,tip]) => ({ label, tip, ...inv(st.mode === id), pick: () => {
         if (id === "sprite") this.go(st.mode === "sprite" ? 0 : 4);
         else if (id === "status") this.go(SLOTS.findIndex(x => x.group === "status"));
@@ -695,7 +765,7 @@ class Editor extends Component {
       layerCanvases: curL.map((x, i) => ({ ref: this.layerRef(i), display: x.visible ? "block" : "none" })),
       layerRows: curL.map((x, i) => ({ name: x.name, active: i === aIdx, visible: x.visible, ...inv(i === aIdx), eye: x.visible ? "●" : "○", eyeLabel: x.visible ? "숨기기" : "보이기",
         pick: () => this.layerOp("pick", i), vis: () => this.layerOp("vis", i), up: () => this.layerOp("up", i), down: () => this.layerOp("down", i), del: () => this.layerOp("del", i) })).reverse(),
-      layerCount: curL.length, noAdd: curL.length >= 3, addOp: curL.length >= 3 ? 0.4 : 1, addLayer: () => this.layerOp("add"),
+      layerCount: curL.length, noAdd: curL.length >= MAX_LAYERS, addOp: curL.length >= MAX_LAYERS ? 0.4 : 1, maxLayers: MAX_LAYERS, addLayer: () => this.layerOp("add"),
       isChibi: s.key === "sprite_chibi", chibiGuide: 3 * zoom,
       pDown: this.pDown, pMove: this.pMove, pUp: this.pUp, noMenu: this.noMenu,
       ringDown: this.ringDown, sqDown: this.sqDown, pickMove: this.pickMove, pickUp: this.pickUp,
@@ -716,7 +786,7 @@ class Editor extends Component {
       packCards: PACKS.map(p => { const on = st.packA === p[0] || st.packB === p[0]; const ov = st.over[p[0]] || 0;
         return { en: "내보낼 이름: [" + p[0] + "]", ko: p[1], p1: p[2], p2: p[3], tagline: p[4] ? "커스텀 전용" : "", on,
         bg: on ? c.paper : c.panel, border: on ? "3px solid " + c.ink : "2px solid " + c.ink,
-        btnLabel: on ? "✓ 선택됨" : "선택", btnBg: on ? c.ink : c.paper, btnFg: on ? c.panel : c.ink,
+        btnLabel: on ? "선택됨" : "선택", btnBg: on ? c.ink : c.paper, btnFg: on ? c.panel : c.ink,
         toggle: () => this.togglePack(p[0]),
         over: ov, anim: ov > 0 ? "pk-scroll" : "none", dur: Math.round((3 + ov / 8) * 10) / 10,
         full: p[2] + " / " + p[3], n1: p[2].split(": ")[0], e1: p[2].slice(p[2].indexOf(": ") + 2), n2: p[3].split(": ")[0], e2: p[3].slice(p[3].indexOf(": ") + 2), measure: (el) => this.measurePack(p[0], el) }; }),
@@ -740,7 +810,16 @@ class Editor extends Component {
       sta: st.active.low_stamina ? 9 : 17, rea: st.active.low_reason ? 9 : 16,
       leftStats: [0,1,2,5].map(i => this.statRow(i)), rightStats: [4,3].map(i => this.statRow(i)),
       fnd: [st.bonusA, st.bonusB].reduce((a, b) => a + (b && b.t === "funds" ? (Number(b.v) || 0) : 0), 0),
-      statSum: sum,
+      statSum: sum, appVer: APP_VER, appDate: APP_DATE,
+      brushSize: st.brushSize, onBrushSize: (e) => this.setState({ brushSize: Math.max(1, Math.min(8, Number(e.target.value) || 1)) }),
+      sizeBtns: SIZES.map(n => ({ n, on: st.brushSize === n, ...inv(st.brushSize === n), pick: () => this.setState({ brushSize: n }) })),
+      pressOn: !!st.pressOn, pressBtn: inv(!!st.pressOn), togglePress: () => this.setState(x => ({ pressOn: !x.pressOn })),
+      isTone: st.tool === "dither", toneBtns: TONES.map(([v, label]) => ({ label, on: st.toneLv === v, ...inv(st.toneLv === v), pick: () => this.setState({ toneLv: v }) })),
+      setHoverBox: this.setHoverBox, pLeave: this.pLeave, clearLayer: this.clearLayer,
+      mirrorOn: !!st.mirror, mirrorX: Math.floor(SLOTS[st.slot].w * (this.curZoom || 1) / 2),
+      shapeBtns: SHAPES.map(([id, name, g]) => ({ name, g, on: st.brushShape === id, ...inv(st.brushShape === id), pick: () => this.setState({ brushShape: id }) })),
+      toneKinds: TONE_KINDS.map(([id, name, desc], i) => ({ name, desc, span: i === TONE_KINDS.length - 1 && TONE_KINDS.length % 2 ? "span 2" : "auto", on: st.toneKind === id, ...inv(st.toneKind === id), prev: this.tonePreview(id, st.toneKind === id),
+        pick: () => this.setState({ toneKind: id, tool: "dither" }) })),
       openBig: () => this.setState({ big: 3 }), closeBig: () => this.setState({ big: 0 }), stop: (e) => e.stopPropagation(), bigOn: st.big > 0,
       bigW: 195 * (st.big || 1), bigH: 164 * (st.big || 1),
       bigScales: [1,2,3,4].map(n => ({ n, on: st.big === n, ...inv(st.big === n), pick: () => this.setState({ big: n }) })),
@@ -772,7 +851,7 @@ class Editor extends Component {
 </filter>
 </defs></svg>
 ${(v.hasTip) ? html`
-<div class="ftip" role="tooltip" style="left:${v.tipX}px;top:${v.tipY}px"><b>${v.tipTitle}</b><div style="font-size:10px;opacity:0.8">${v.tipSub}</div><div style="padding-top:3px">${v.tipBody}</div></div>
+<div class="ftip" role="tooltip" style="left:${v.tipX}px;top:${v.tipY}px"><b>${v.tipTitle}</b><div style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;opacity:0.8">${v.tipSub}</div><div style="padding-top:3px">${v.tipBody}</div></div>
 ` : null}
 
 <div style="height:34px;flex-shrink:0;display:flex;align-items:center;gap:6px;padding:0 8px;border-bottom:2px solid ${v.c.ink};background:${v.c.panel};white-space:nowrap">
@@ -785,24 +864,25 @@ ${(v.importMenu) ? html`
 <div aria-hidden="true" onClick=${v.toggleImportMenu} style="position:fixed;inset:0;z-index:79"></div>
 <div role="menu" style="position:absolute;left:0;top:28px;z-index:80;width:300px;white-space:normal;word-break:keep-all;background:${v.c.panel};border:2px solid ${v.c.ink};box-shadow:4px 4px 0 ${v.c.mid};display:flex;flex-direction:column">
 ${(v.importItems || []).map((m, $index) => html`
-<button type="button" role="menuitem" onClick=${m.go} style="text-align:left;border:0;border-bottom:1px solid ${v.c.mid};background:${v.c.panel};color:${v.c.ink};padding:6px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px"><b style="font-size:12px">${m.label}</b><span style="font-size:10px;line-height:13px;color:${v.c.mid}">${m.desc}</span></button>
+<button type="button" role="menuitem" onClick=${m.go} style="text-align:left;border:0;border-bottom:1px solid ${v.c.mid};background:${v.c.panel};color:${v.c.ink};padding:6px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px"><b style="font-size:12px">${m.label}</b><span style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:13px;color:${v.c.mid}">${m.desc}</span></button>
 `)}
-<div style="padding:6px 8px;font-size:10px;line-height:13px;background:${v.c.ink};color:${v.c.panel}">폴더·zip·.ito·그림을 화면 아무 곳에나 끌어다 놓아도 불러옵니다.</div>
+<div style="padding:6px 8px;font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:13px;background:${v.c.ink};color:${v.c.panel}">폴더·zip·.ito·그림을 화면 아무 곳에나 끌어다 놓아도 불러옵니다.</div>
 </div>
 ` : null}
 </div>
 <div class="tip-wrap"><button type="button" onClick=${v.goExport} style="height:24px;border:2px solid ${v.c.ink};background:${v.c.ink};color:${v.c.panel};padding:0 8px;cursor:pointer">.zip 내보내기</button><div class="tip b" role="tooltip"><b>.zip 내보내기</b><br />.ito 파일과 그림을 경로에 맞춰 하나로 묶습니다. 그림 파일 이름은 칸 이름으로 정리됩니다.</div></div>
 <span style="width:2px;height:20px;background:${v.c.ink};margin:0 2px"></span>
-<button type="button" onClick=${v.undo} title="되돌리기 (Ctrl+Z)" style="height:24px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};padding:0 6px;cursor:pointer">↶ 되돌리기 ^Z</button>
-<button type="button" onClick=${v.redo} title="다시하기 (Ctrl+Y)" style="height:24px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};padding:0 6px;cursor:pointer">↷ 다시하기 ^Y</button>
+<button type="button" onClick=${v.undo} title="되돌리기 (Ctrl+Z)" style="height:24px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};padding:0 6px;cursor:pointer">↶ 되돌리기</button>
+<button type="button" onClick=${v.redo} title="다시 하기 (Ctrl+Y)" style="height:24px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};padding:0 6px;cursor:pointer">↷ 다시 하기</button>
 <button type="button" onClick=${v.toggleSound} aria-pressed=${v.soundOff} title="키보드를 칠 때와 단추를 누를 때 소리를 냅니다" style="height:24px;border:2px solid ${v.c.ink};padding:0 8px;cursor:pointer;background:${v.sndBtn.bg};color:${v.sndBtn.fg}">${v.sndBtn.label}</button>
+<div class="tip-wrap"><a href="https://forms.gle/J7Vk7uS9RFTvqype6" target="_blank" rel="noopener" style="height:24px;display:inline-flex;align-items:center;border:2px solid ${v.c.ink};padding:0 8px;background:${v.c.panel};color:${v.c.ink};text-decoration:none">우체통</a><div class="tip b" role="tooltip"><b>우체통</b><br />버그나 문의 사항을 보내실 수 있습니다. 새 탭으로 설문지가 열립니다.</div></div>
 <button type="button" onClick=${v.toggleTips} aria-pressed=${v.tipsOff} style="height:24px;border:2px solid ${v.c.ink};padding:0 8px;cursor:pointer;background:${v.tipBtn.bg};color:${v.tipBtn.fg}">${v.tipBtn.label}</button>
 <span style="flex-grow:1"></span>
 <div class="tip-wrap"><span>필터</span><div class="tip bl" role="tooltip" style="width:240px"><b>게임 색상 필터 미리보기</b><br />게임 옵션의 색상 필터를 씌워 봅니다. 그림 속 #FF40FE 마젠타는 필터마다 포인트 색으로 바뀝니다. 필터 색감은 실제 인게임과 다를 수 있습니다.</div></div>
 ${(v.filters || []).map((f, $index) => html`
 <button type="button" onClick=${f.pick} style="height:24px;border:2px solid ${v.c.ink};padding:0 8px;cursor:pointer;background:${f.bg};color:${f.fg}">${f.label}</button>
 `)}
-<span title="필터 색감은 실제 인게임과 다를 수 있습니다." style="font-size:11px;line-height:12px;color:${v.c.mid};padding-left:4px;white-space:nowrap;width:150px;flex-shrink:0">필터 색감은 실제 인게임과<br />다를 수 있습니다.</span>
+<span title="필터 색감은 실제 인게임과 다를 수 있습니다." style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:12px;color:${v.c.mid};padding-left:4px;white-space:nowrap;width:132px;flex-shrink:0">필터 색감은 실제 인게임과<br />다를 수 있습니다.</span>
 </div>
 
 <div style="flex-grow:1;display:flex;min-height:0">
@@ -814,8 +894,9 @@ ${(v.filters || []).map((f, $index) => html`
 
 <div style="width:48px;flex-shrink:0;border-right:2px solid ${v.c.ink};background:${v.c.panel};display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:8px">
 ${(v.tools || []).map((t, $index) => html`
-<div class="tip-wrap"><button type="button" onClick=${t.pick} aria-label=${t.name} aria-describedby="tip-${t.id}" style="width:36px;height:36px;border:2px solid ${v.c.ink};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:12px;padding:0;background:${t.bg};color:${t.fg}"><span style="font-weight:700;font-size:13px">${t.glyph}</span><span style="font-size:9px">${t.key}</span></button><div class="tip" role="tooltip" id="tip-${t.id}"><div style="font-weight:700;font-size:12px">${t.name}<span class="tip-key">${t.key}</span></div><div style="padding-top:2px">${t.desc}</div></div></div>
+<div class="tip-wrap"><button type="button" onClick=${t.pick} aria-label=${t.name} aria-describedby="tip-${t.id}" style="width:36px;height:36px;border:2px solid ${v.c.ink};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:12px;padding:0;background:${t.bg};color:${t.fg}"><span style="font-weight:700;font-size:12px">${t.glyph}</span><span style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400">${t.key}</span></button><div class="tip" role="tooltip" id="tip-${t.id}"><div style="font-weight:700;font-size:12px">${t.name}<span class="tip-key">${t.key}</span></div><div style="padding-top:2px">${t.desc}</div></div></div>
 `)}
+<div class="tip-wrap" style="margin-top:auto;margin-bottom:6px"><span style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;color:${v.c.mid}">${v.appVer}</span><div class="tip" role="tooltip"><b>판 번호 ${v.appVer}</b><br />${v.appDate} 갱신. 우체통으로 제보하실 때 함께 적어주시면 도움이 됩니다.</div></div>
 </div>
 
 
@@ -851,18 +932,52 @@ ${(v.slotList || []).map((s, $index) => html`
 <div class="tip-wrap" style="display:block"><button type="button" onClick=${s.pick} style="width:100%;height:24px;display:flex;gap:6px;align-items:center;border:0;border-bottom:1px solid ${v.c.mid};padding:0 6px;text-align:left;cursor:pointer;background:${s.bg};color:${s.fg}"><span style="width:12px;font-weight:700">${s.mark}</span><span>${s.label}</span></button><div class="tip" role="tooltip"><b>${s.label}</b> <span class="tip-key">${s.size}</span><br />${s.tip}</div></div>
 `)}
 </div>
-<div style="padding:3px 6px;border-top:2px solid ${v.c.ink};font-size:11px;line-height:14px">■ 채움 □ 빔 ! 경고</div>
+<div style="flex-shrink:0;border-top:2px solid ${v.c.ink};padding:4px 6px;display:flex;flex-direction:column;gap:4px">
+<div style="font-weight:700">브러시 모양</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px">
+${(v.shapeBtns || []).map((b, $index) => html`
+<button type="button" onClick=${b.pick} aria-pressed=${b.on} aria-label="${b.name} 브러시" title=${b.name} style="height:22px;padding:0;border:1px solid ${v.c.ink};cursor:pointer;background:${b.bg};color:${b.fg}">${b.g}</button>
+`)}
+</div>
+<div style="font-weight:700;margin-top:2px">톤 종류</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px">
+${(v.toneKinds || []).map((t, $index) => html`
+<div class="tip-wrap" style="display:block;grid-column:${t.span}"><button type="button" onClick=${t.pick} aria-pressed=${t.on} style="width:100%;height:22px;display:flex;align-items:center;gap:3px;padding:0 2px;border:1px solid ${v.c.ink};cursor:pointer;background:${t.bg};color:${t.fg};white-space:nowrap;overflow:hidden"><img src=${t.prev} alt width="14" height="12" style="flex-shrink:0;image-rendering:pixelated" /><span>${t.name}</span></button><div class="tip t" role="tooltip"><b>${t.name}</b><br />${t.desc} 누르면 톤 붓으로 바뀝니다.</div></div>
+`)}
+</div>
+</div>
+<div style="padding:3px 6px;border-top:2px solid ${v.c.ink};font-size:12px;line-height:14px">■ 채움 □ 빔 ! 경고</div>
 </div>
 
 
-<div style="position:relative;flex-grow:1;border:2px solid ${v.c.ink};background:${v.c.paper};min-width:0">
-<div aria-hidden="true" style="position:absolute;left:4px;top:3px;z-index:3;pointer-events:none;font-size:10px;line-height:12px;color:${v.c.ink};background:${v.c.paper};opacity:0.8;padding:1px 4px"><div>스페이스+좌클릭 : 화면 이동</div><div>배율 ×${v.zoomNow}</div></div>
+<div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+
+<div style="flex-shrink:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;border:2px solid ${v.c.ink};background:${v.c.panel};padding:3px 6px">
+<div class="tip-wrap"><span style="font-weight:700">크기 ${v.brushSize}</span><div class="tip b" role="tooltip"><b>브러시 크기</b><br />연필·지우개·톤 붓·직선·사각형에 함께 적용됩니다. 키보드 [ ] 로도 바꿀 수 있습니다.</div></div>
+<input type="range" min="1" max="8" step="1" value=${v.brushSize} onInput=${v.onBrushSize} aria-label="브러시 크기" style="width:72px" />
+<div style="display:flex;gap:2px">
+${(v.sizeBtns || []).map((b, $index) => html`
+<button type="button" onClick=${b.pick} aria-pressed=${b.on} aria-label="크기 ${b.n}" style="width:22px;height:20px;padding:0;border:1px solid ${v.c.ink};cursor:pointer;background:${b.bg};color:${b.fg}">${b.n}</button>
+`)}
+</div>
+<div class="tip-wrap"><button type="button" onClick=${v.togglePress} aria-pressed=${v.pressOn} style="height:20px;padding:0 6px;border:1px solid ${v.c.ink};cursor:pointer;background:${v.pressBtn.bg};color:${v.pressBtn.fg}">필압</button><div class="tip b" role="tooltip"><b>필압</b><br />타블렛 펜으로 그릴 때 누르는 힘에 따라 크기가 1부터 지금 크기까지 변합니다. 마우스에는 적용되지 않습니다.</div></div>
+<div class="tip-wrap"><button type="button" onClick=${v.clearLayer} style="height:20px;padding:0 6px;border:1px solid ${v.c.ink};cursor:pointer;background:${v.c.panel};color:${v.c.ink}">전체 지우기</button><div class="tip b" role="tooltip"><b>전체 지우기 <span class="tip-key">Delete</span></b><br />지금 고른 레이어의 그림을 모두 지웁니다. 다른 레이어는 그대로이며, Ctrl+Z로 되돌릴 수 있습니다.</div></div>
+${(v.isTone) ? html`
+<div style="display:flex;align-items:center;gap:2px;padding-left:6px;border-left:1px solid ${v.c.mid}"><span style="font-weight:700;margin-right:2px">톤</span>
+${(v.toneBtns || []).map((t, $index) => html`
+<button type="button" onClick=${t.pick} aria-pressed=${t.on} style="height:20px;padding:0 4px;border:1px solid ${v.c.ink};cursor:pointer;background:${t.bg};color:${t.fg}">${t.label}</button>
+`)}
+</div>
+` : null}
+</div>
+<div style="position:relative;flex-grow:1;min-height:0;border:2px solid ${v.c.ink};background:${v.c.paper};min-width:0">
+<div aria-hidden="true" style="position:absolute;left:4px;top:3px;z-index:3;pointer-events:none;font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:12px;color:${v.c.ink};background:${v.c.paper};opacity:0.8;padding:1px 4px"><div>스페이스+좌클릭: 화면 이동</div><div>배율 ×${v.zoomNow}</div></div>
 <div ref=${v.setZoomBox} class="zbox" style="position:absolute;left:0;top:0;right:0;bottom:0;display:flex;overflow:auto;cursor:${v.boxCursor}">
 <div style="position:relative;margin:auto;flex-shrink:0;width:${v.dispW}px;height:${v.dispH}px;outline:2px solid ${v.edgeColor};background-color:#d9d9d9;background-image:linear-gradient(45deg,#bdbdbd 25%,transparent 25%,transparent 75%,#bdbdbd 75%),linear-gradient(45deg,#bdbdbd 25%,transparent 25%,transparent 75%,#bdbdbd 75%);background-size:16px 16px;background-position:0 0,8px 8px">
 ${(v.showUnder) ? html`
 <img src=${v.underSrc} alt style="position:absolute;left:0;top:0;width:${v.dispW}px;height:${v.dispH}px;opacity:${v.underOp};filter:${v.imgFilter};pointer-events:none" />
 ` : null}
-<div onPointerDown=${v.pDown} onPointerMove=${v.pMove} onPointerUp=${v.pUp} onPointerCancel=${v.pUp} onLostPointerCapture=${v.pUp} onContextMenu=${v.noMenu} role="application" aria-label="도트 캔버스" style="position:absolute;left:0;top:0;width:${v.dispW}px;height:${v.dispH}px;touch-action:none;cursor:crosshair">
+<div onPointerDown=${v.pDown} onPointerMove=${v.pMove} onPointerUp=${v.pUp} onPointerCancel=${v.pUp} onLostPointerCapture=${v.pUp} onPointerLeave=${v.pLeave} onContextMenu=${v.noMenu} role="application" aria-label="도트 캔버스" style="position:absolute;left:0;top:0;width:${v.dispW}px;height:${v.dispH}px;touch-action:none;cursor:crosshair">
 ${(v.layerCanvases || []).map((L, $index) => html`
 <canvas ref=${L.ref} width=${v.slotW} height=${v.slotH} aria-hidden="true" style="position:absolute;left:0;top:0;width:${v.dispW}px;height:${v.dispH}px;filter:${v.imgFilter};display:${L.display};pointer-events:none"></canvas>
 `)}
@@ -870,6 +985,11 @@ ${(v.layerCanvases || []).map((L, $index) => html`
 ${(v.isChibi) ? html`
 <div style="position:absolute;left:0;right:0;bottom:${v.chibiGuide}px;border-top:1px dashed #ff2a55;pointer-events:none"></div>
 ` : null}
+${(v.mirrorOn) ? html`
+<div aria-hidden="true" style="position:absolute;top:0;bottom:0;left:${v.mirrorX}px;width:0;border-left:1px dashed #00a8ff;pointer-events:none;z-index:2"></div>
+` : null}
+<div ref=${v.setHoverBox} aria-hidden="true" style="position:absolute;display:none;pointer-events:none;outline:1px solid #ffffff;box-shadow:0 0 0 2px #000000;z-index:2"></div>
+</div>
 </div>
 </div>
 </div>
@@ -897,7 +1017,7 @@ ${(v.isChibi) ? html`
 <button type="button" aria-label="앞색 ${v.colorName}" style="position:absolute;left:0;top:0;width:30px;height:30px;padding:0;border:2px solid ${v.c.ink};outline:2px solid ${v.c.panel};background:${v.fgCss}"></button>
 <button type="button" onClick=${v.pickClear} aria-label="투명색(#40FF40) 고르기" style="position:absolute;left:0;top:52px;width:48px;height:8px;padding:0;cursor:pointer;border:1px solid ${v.c.ink};background:repeating-conic-gradient(#9e9e9e 0 25%,#ffffff 0 50%) 0 0 / 8px 8px"></button>
 </div>
-<div style="flex-grow:1;display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:14px">
+<div style="flex-grow:1;display:flex;flex-direction:column;gap:2px;font-size:12px;line-height:14px">
 <div style="font-weight:700">${v.colorName}</div>
 <div style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:#e00000"></span>${v.rgb.r}</div>
 <div style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:#00a000"></span>${v.rgb.g}</div>
@@ -913,9 +1033,9 @@ ${(v.swatches || []).map((w, $index) => html`
 </div>
 </div>
 
-<div style="border:2px solid ${v.c.ink};background:${v.c.panel}">
-<div style="display:flex;align-items:center;padding:2px 3px 2px 6px;background:${v.c.ink};color:${v.c.panel};font-weight:700"><span style="flex:1">레이어 ${v.layerCount}/3</span><button type="button" onClick=${v.addLayer} disabled=${v.noAdd} aria-label="레이어 추가" style="height:18px;padding:0 6px;border:1px solid ${v.c.panel};background:${v.c.ink};color:${v.c.panel};cursor:pointer;font-size:11px;opacity:${v.addOp}">+ 추가</button></div>
-<div style="padding:6px;display:flex;flex-direction:column;gap:4px">
+<div style="border:2px solid ${v.c.ink};background:${v.c.panel};flex:1 1 auto;min-height:0;display:flex;flex-direction:column">
+<div style="flex-shrink:0;display:flex;align-items:center;padding:2px 3px 2px 6px;background:${v.c.ink};color:${v.c.panel};font-weight:700"><span style="flex:1">레이어 ${v.layerCount}/${v.maxLayers}</span><button type="button" onClick=${v.addLayer} disabled=${v.noAdd} aria-label="레이어 추가" style="height:18px;padding:0 6px;border:1px solid ${v.c.panel};background:${v.c.ink};color:${v.c.panel};cursor:pointer;font-size:12px;opacity:${v.addOp}">+ 추가</button></div>
+<div style="padding:6px;display:flex;flex-direction:column;gap:4px;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:${v.c.mid} transparent">
 ${(v.isStatusSlot) ? html`
 <div style="display:flex;gap:3px;align-items:center"><div class="tip-wrap" style="flex-shrink:0"><span style="font-weight:700">밑그림 ?</span><div class="tip l" role="tooltip"><b>밑그림</b><br />덧그림 위치를 맞추기 위해 초상화를 흐리게 깔아 둡니다. 화면에만 보이고 내보내는 그림에는 들어가지 않습니다.</div></div><button type="button" onClick=${v.toggleUnder} aria-pressed=${v.underOn} style="height:22px;flex:1;border:2px solid ${v.c.ink};cursor:pointer;padding:0;background:${v.ubOff.bg};color:${v.ubOff.fg}">${v.underLabel}</button><button type="button" onClick=${v.underA} aria-pressed=${v.ubA.on} style="height:22px;flex:1;border:2px solid ${v.c.ink};cursor:pointer;padding:0;background:${v.ubA.bg};color:${v.ubA.fg}">A</button><button type="button" onClick=${v.underB} aria-pressed=${v.ubB.on} style="height:22px;flex:1;border:2px solid ${v.c.ink};cursor:pointer;padding:0;background:${v.ubB.bg};color:${v.ubB.fg}">B</button></div>
 <div style="display:flex;gap:6px;align-items:center"><label for="underop" style="flex-shrink:0">불투명도</label><input id="underop" type="range" min="0" max="100" step="5" value=${v.underPct} onInput=${v.onUnderOp} disabled=${v.underDisabled} style="flex:1;min-width:0;accent-color:${v.c.ink}" /><span style="font-weight:700;width:34px;text-align:right">${v.underPct}%</span></div>
@@ -943,7 +1063,7 @@ ${(v.isInfo) ? html`
 <div style="grid-column:span 2;display:flex;gap:8px;align-items:center;padding-bottom:8px;border-bottom:1px dashed ${v.c.mid}">
 <button type="button" onClick=${v.newCharacter} style="height:28px;padding:0 12px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer">새 캐릭터</button>
 <button type="button" onClick=${v.loadSample} style="height:28px;padding:0 12px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer">예시 불러오기 (미미르)</button>
-<span style="font-size:11px;color:${v.c.mid}">처음이시라면 예시를 불러와 구조를 살펴보셔도 좋습니다.</span></div>
+<span style="font-size:12px;color:${v.c.mid}">처음이시라면 예시를 불러와 구조를 살펴보셔도 좋습니다.</span></div>
 <label style="display:flex;flex-direction:column;gap:4px">이름 (name)<input value=${v.info.name} onInput=${v.onInfo.name} style="height:28px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:0 6px" /></label>
 <label style="display:flex;flex-direction:column;gap:4px">제작자 (author)<input value=${v.info.author} onInput=${v.onInfo.author} style="height:28px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:0 6px" /></label>
 <label style="display:flex;flex-direction:column;gap:4px">연락처 (contact)<input value=${v.info.contact} onInput=${v.onInfo.contact} style="height:28px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:0 6px" /></label>
@@ -951,8 +1071,8 @@ ${(v.isInfo) ? html`
 <label class="tip-wrap" style="display:flex;flex-direction:column;gap:4px">의상 A 이름 (name_a)<div class="tip" role="tooltip"><b>의상 이름</b><br />집의 옷장에서 의상을 고를 때 보이는 이름입니다. 초상화 A·B와 짝을 이룹니다.</div><input value=${v.info.na} onInput=${v.onInfo.na} style="height:28px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:0 6px" /></label>
 <label style="display:flex;flex-direction:column;gap:4px">의상 B 이름 (name_b)<input value=${v.info.nb} onInput=${v.onInfo.nb} style="height:28px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:0 6px" /></label>
 <label class="tip-wrap" style="grid-column:span 2;display:flex;flex-direction:column;gap:4px">소개 (menu_desc)<div class="tip b" role="tooltip" style="width:260px"><b>소개 글</b><br />캐릭터 선택 화면의 설명입니다. 기본 캐릭터는 첫 줄에 이름, 둘째 줄에 나이·성별, 한 줄 띄우고 소개를 씁니다. 긴 문장은 게임이 알아서 줄을 넘깁니다.</div> · 엔터로 줄을 바꾸면 내보낼 때 #로 변환됩니다<textarea value=${v.info.desc} onInput=${v.onInfo.desc} style="height:120px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:6px;resize:none"></textarea></label>
-<div style="grid-column:span 2;border:2px dashed ${v.c.mid};padding:6px;font-size:11px;line-height:14px;word-break:break-all;display:flex;flex-direction:column;gap:2px"><span style="font-weight:700">.ito에는 다음과 같이 저장됩니다</span><span>${v.tagOut}</span><span>${v.descOut}</span></div>
-<div style="grid-column:span 2;font-size:11px">빈 줄은 공백 한 칸(" ")으로 저장됩니다. 본문에 #를 직접 입력하면 게임에서 줄바꿈으로 처리되니 주의해주세요. 능력치는 오른쪽 초상화 패널에서 수정해주세요.</div>
+<div style="grid-column:span 2;border:2px dashed ${v.c.mid};padding:6px;font-size:12px;line-height:14px;word-break:break-all;display:flex;flex-direction:column;gap:2px"><span style="font-weight:700">.ito에는 다음과 같이 저장됩니다</span><span>${v.tagOut}</span><span>${v.descOut}</span></div>
+<div style="grid-column:span 2;font-size:12px">빈 줄은 공백 한 칸(" ")으로 저장됩니다. 본문에 #를 직접 입력하면 게임에서 줄바꿈으로 처리되니 주의해주세요. 능력치는 오른쪽 초상화 패널에서 수정해주세요.</div>
 
 </div>
 ` : null}
@@ -968,7 +1088,7 @@ ${(v.isBonus) ? html`
 <div style="position:relative;flex-grow:1;min-height:0;display:flex;flex-direction:column;gap:6px;border:2px solid ${v.c.ink};background:${v.c.panel};padding:8px">
 ${(v.hasConfirm) ? html`
 <div class="lock-warn" role="alertdialog" aria-labelledby="lockt">
-<div style="display:flex;align-items:center;gap:10px"><svg width="24" height="28" viewBox="0 0 6 7" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 0h4v1H1zM0 1h1v2H0zM5 1h1v2H5zM0 3h6v4H0z" fill=${v.c.panel}></path><rect x="2" y="4" width="2" height="2" fill=${v.c.ink}></rect></svg><span id="lockt" style="font-weight:700;font-size:14px;line-height:18px">잠긴 보너스: ${v.confirmName}</span></div>
+<div style="display:flex;align-items:center;gap:10px"><svg width="24" height="28" viewBox="0 0 6 7" shape-rendering="crispEdges" aria-hidden="true"><path d="M1 0h4v1H1zM0 1h1v2H0zM5 1h1v2H5zM0 3h6v4H0z" fill=${v.c.panel}></path><rect x="2" y="4" width="2" height="2" fill=${v.c.ink}></rect></svg><span id="lockt" style="font-weight:700;font-size:12px;line-height:18px">잠긴 보너스: ${v.confirmName}</span></div>
 <div class="scroll" aria-hidden="true"><span>${v.confirmFlow}</span></div>
 <div style="line-height:18px">${v.confirmText}</div>
 <div style="display:flex;gap:8px;padding-top:10px">
@@ -995,15 +1115,15 @@ ${(v.isNumCat) ? html`
 <label for="bnum" style="font-weight:700">${v.numLabel}</label>
 <input id="bnum" type="number" value=${v.numVal} onInput=${v.onNum} style="width:90px;height:28px;border:2px solid ${v.c.ink};background:${v.c.paper};color:${v.c.ink};padding:0 6px" />
 <button type="button" onClick=${v.applyNum} style="height:28px;padding:0 10px;border:2px solid ${v.c.ink};background:${v.c.ink};color:${v.c.panel};cursor:pointer">보너스 ${v.targetSlot}에 넣기</button>
-<span style="font-size:11px;line-height:14px;flex:1">${v.numDesc}</span>
+<span style="font-size:12px;line-height:14px;flex:1">${v.numDesc}</span>
 </div>
 ` : null}
 <div style="flex-grow:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;align-content:start">
 ${(v.bonusItems || []).map((it, $index) => html`
-<button type="button" onClick=${it.pick} onMouseEnter=${it.enter} onMouseLeave=${v.hideTip} onFocus=${it.enter} onBlur=${v.hideTip} style="height:40px;display:flex;flex-direction:column;justify-content:center;text-align:left;padding:0 6px;cursor:pointer;border:${it.border};background:${it.bg};color:${it.fg}"><span style="font-weight:700;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:flex;align-items:center;gap:4px">${(it.locked) ? html`<svg width="10" height="12" viewBox="0 0 6 7" shape-rendering="crispEdges" aria-label="잠김" style="flex-shrink:0"><path d="M1 0h4v1H1zM0 1h1v2H0zM5 1h1v2H5zM0 3h6v4H0z" fill=${v.c.panel}></path><rect x="2" y="4" width="2" height="2" fill=${v.c.ink}></rect></svg>` : null}${it.ko}</span><span style="font-size:10px;line-height:12px;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${it.sub}</span></button>
+<button type="button" onClick=${it.pick} onMouseEnter=${it.enter} onMouseLeave=${v.hideTip} onFocus=${it.enter} onBlur=${v.hideTip} style="height:40px;display:flex;flex-direction:column;justify-content:center;text-align:left;padding:0 6px;cursor:pointer;border:${it.border};background:${it.bg};color:${it.fg}"><span style="font-weight:700;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:flex;align-items:center;gap:4px">${(it.locked) ? html`<svg width="10" height="12" viewBox="0 0 6 7" shape-rendering="crispEdges" aria-label="잠김" style="flex-shrink:0"><path d="M1 0h4v1H1zM0 1h1v2H0zM5 1h1v2H5zM0 3h6v4H0z" fill=${v.c.panel}></path><rect x="2" y="4" width="2" height="2" fill=${v.c.ink}></rect></svg>` : null}${it.ko}</span><span style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:12px;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${it.sub}</span></button>
 `)}
 </div>
-<div style="font-size:11px;flex-shrink:0">${v.bonusFoot}</div>
+<div style="font-size:12px;flex-shrink:0">${v.bonusFoot}</div>
 </div>
 ` : null}
 ${(v.isPerkPacks) ? html`
@@ -1011,14 +1131,14 @@ ${(v.isPerkPacks) ? html`
 <div style="grid-column:span 3;display:flex;align-items:center;gap:12px;background:${v.c.ink};color:${v.c.panel};padding:8px 10px"><span style="font-weight:700;flex-shrink:0">선택 ${v.packCount}/2</span><span>퍽은 최대 2개까지 선택 가능합니다. 없어도 게임에 지장은 없습니다.</span></div>
 ${(v.packCards || []).map((p, $index) => html`
 <div class="pk-card" style="border:${p.border};padding:6px;height:150px;display:flex;flex-direction:column;gap:4px;background:${p.bg}">
-<div style="font-weight:700">${p.ko} <span style="font-weight:400;font-size:11px">${p.tagline}</span></div>
-<div style="font-size:11px;line-height:14px">${p.en}</div>
+<div style="font-weight:700">${p.ko} <span style="font-weight:400;font-size:12px">${p.tagline}</span></div>
+<div style="font-size:12px;line-height:14px">${p.en}</div>
 <div class="pk-win" ref=${p.measure} style="height:56px;flex-shrink:0;overflow:hidden"><div class="pk-in" style="--d:-${p.over}px;animation-name:${p.anim};animation-duration:${p.dur}s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-direction:alternate">
-<div style="font-size:11px;line-height:14px">· ${p.p1}</div>
-<div style="font-size:11px;line-height:14px">· ${p.p2}</div>
+<div style="font-size:12px;line-height:14px">· ${p.p1}</div>
+<div style="font-size:12px;line-height:14px">· ${p.p2}</div>
 </div></div>
 <div class="pk-tip" role="tooltip"><div style="font-weight:700;font-size:12px">${p.n1}</div><div>${p.e1}</div><div style="font-weight:700;font-size:12px;padding-top:6px">${p.n2}</div><div>${p.e2}</div></div>
-<button type="button" onClick=${p.toggle} aria-pressed=${p.on} style="margin-top:auto;flex-shrink:0;height:24px;border:2px solid ${v.c.ink};cursor:pointer;background:${p.btnBg};color:${p.btnFg}">${p.btnLabel}</button>
+<button type="button" onClick=${p.toggle} aria-pressed=${p.on} style="margin-top:auto;flex-shrink:0;height:24px;border:2px solid ${v.c.ink};cursor:pointer;background:${p.btnBg};color:${p.btnFg};white-space:nowrap">${(p.on) ? html`<svg width="14" height="10" viewBox="0 0 7 5" shape-rendering="crispEdges" aria-hidden="true" style="display:inline-block;vertical-align:0;margin-right:6px"><path d="M6 0h1v1H6zM5 1h2v1H5zM0 2h1v1H0zM4 2h2v1H4zM0 3h2v1H0zM3 3h2v1H3zM1 4h3v1H1z" fill="currentColor"></path></svg>` : null}${p.btnLabel}</button>
 </div>
 `)}
 </div>
@@ -1027,15 +1147,15 @@ ${(v.packCards || []).map((p, $index) => html`
 
 ${(v.isExport) ? html`
 <div style="flex-grow:1;min-height:0;display:flex;gap:8px">
-<pre style="flex-grow:1;margin:0;overflow:auto;border:2px solid ${v.c.ink};background:${v.c.panel};padding:8px;font-family:Galmuri11,monospace;font-size:11px;line-height:14px;white-space:pre">${v.itoText}</pre>
+<pre style="flex-grow:1;margin:0;overflow:auto;border:2px solid ${v.c.ink};background:${v.c.panel};padding:8px;font-family:Galmuri11,monospace;font-size:12px;line-height:14px;white-space:pre">${v.itoText}</pre>
 <div style="width:220px;flex-shrink:0;border:2px solid ${v.c.ink};background:${v.c.panel};padding:8px;display:flex;flex-direction:column;gap:6px">
 <div style="font-weight:700">zip 안에 들어갈 것</div>
 <div>${v.folder}.ito</div>
 <div>${v.folder}/ 그림 ${v.filledCount}장</div>
 <div class="tip-wrap"><div style="font-weight:700;padding-top:6px">내보낼 언어 ?</div><div class="tip l" role="tooltip"><b>내보낼 언어</b><br />시작 보너스의 아이템·주문 이름은 플레이어의 게임 언어와 글자까지 같아야 인식됩니다. 퍽팩은 언어와 상관없이 영어 원문으로 저장됩니다.</div></div>
 <div style="display:flex;gap:4px"><button type="button" onClick=${v.langKo} aria-pressed=${v.lkO.on} style="flex:1;height:24px;border:2px solid ${v.c.ink};cursor:pointer;background:${v.lkO.bg};color:${v.lkO.fg}">한국어</button><button type="button" onClick=${v.langEn} aria-pressed=${v.lEn.on} style="flex:1;height:24px;border:2px solid ${v.c.ink};cursor:pointer;background:${v.lEn.bg};color:${v.lEn.fg}">English</button></div>
-<div style="font-size:11px;line-height:14px">아이템 이름은 플레이하는 게임 언어와 같아야 합니다.</div>
-<div style="margin-top:6px;border:2px solid ${v.c.ink};font-size:11px;line-height:15px">
+<div style="font-size:12px;line-height:14px">아이템 이름은 플레이하는 게임 언어와 같아야 합니다.</div>
+<div style="margin-top:6px;border:2px solid ${v.c.ink};font-size:12px;line-height:15px">
 <div style="padding:3px 6px;background:${v.c.ink};color:${v.c.panel};font-weight:700">설치 방법</div>
 <div style="padding:5px 6px;display:flex;flex-direction:column;gap:3px">
 <span>경로: 스팀 로컬 파일 위치 → W.O.H 폴더</span>
@@ -1045,10 +1165,10 @@ ${(v.isExport) ? html`
 </div>
 <span style="flex-grow:1"></span>
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px">
-<button type="button" onClick=${v.saveWork} style="height:26px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer;font-size:11px">작업 파일 저장</button>
-<button type="button" onClick=${v.openWork} style="height:26px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer;font-size:11px">작업 파일 열기</button>
+<button type="button" onClick=${v.saveWork} style="height:26px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer;font-size:12px">작업 파일 저장</button>
+<button type="button" onClick=${v.openWork} style="height:26px;border:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer;font-size:12px">작업 파일 열기</button>
 </div>
-<div style="font-size:10px;line-height:13px;color:${v.c.mid}">작업은 이 브라우저에 자동 저장됩니다. 다른 기기로 옮길 때는 작업 파일을 쓰세요.</div>
+<div style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:13px;color:${v.c.mid}">작업은 이 브라우저에 자동 저장됩니다. 다른 기기로 옮길 때는 작업 파일을 쓰세요.</div>
 <button type="button" onClick=${v.exportZip} style="height:32px;border:2px solid ${v.c.ink};background:${v.c.ink};color:${v.c.panel};cursor:pointer;font-weight:700">zip 내려받기</button>
 </div>
 </div>
@@ -1076,8 +1196,8 @@ ${(v.logs || []).map((l, $index) => html`
 
 <div style="border-bottom:2px solid ${v.c.ink};flex-shrink:0">
 <div style="height:22px;display:flex;align-items:center;padding:0 8px;background:${v.c.ink};color:${v.c.panel};font-weight:700">${v.infoTitle}</div>
-<div style="padding:4px 8px;font-size:11px;line-height:14px;word-break:break-all">${v.infoLine}</div>
-<div style="padding:0 8px 4px;font-size:11px;line-height:14px;color:${v.c.mid}">${v.infoNote}</div>
+<div style="padding:4px 8px;font-size:12px;line-height:14px;word-break:break-all">${v.infoLine}</div>
+<div style="padding:0 8px 4px;font-size:12px;line-height:14px;color:${v.c.mid}">${v.infoNote}</div>
 </div>
 
 
@@ -1101,7 +1221,7 @@ ${(v.logs || []).map((l, $index) => html`
 </div>
 
 
-<div style="flex-grow:1;min-height:0;overflow-y:auto;padding:4px 8px;font-size:11px;line-height:14px;display:flex;flex-direction:column;gap:2px;border-bottom:2px solid ${v.c.ink}">
+<div style="flex-grow:1;min-height:0;overflow-y:auto;padding:4px 8px;font-size:12px;line-height:14px;display:flex;flex-direction:column;gap:2px;border-bottom:2px solid ${v.c.ink}">
 <div style="font-weight:700;font-size:12px">퍽 효과</div>
 ${(v.perkLines || []).map((p, $index) => html`
 <div><span style="font-weight:700">${p.name}</span> —${p.eff}</div>
@@ -1110,7 +1230,7 @@ ${(v.perkLines || []).map((p, $index) => html`
 
 
 <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:6px 0 8px;gap:4px;background:${v.c.paper}">
-<div style="width:394px;display:flex;align-items:center;gap:4px;font-size:11px">
+<div style="width:394px;display:flex;align-items:center;gap:4px;font-size:12px">
 <div class="tip-wrap" style="flex-grow:1"><span>합계 ${v.statSum} (권장 39)</span><div class="tip l" role="tooltip"><b>능력치 합계</b><br />커뮤니티 모딩 가이드는 여섯 능력치 합을 39 안팎, 운은 6으로 맞추길 권합니다. 해금 캐릭터 중엔 예외도 있습니다.</div></div>
 <button type="button" onClick=${v.openBig} title="실제 게임 배율로 크게 봅니다" style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.c.panel};color:${v.c.ink}">크게 보기</button>
 <button type="button" onClick=${v.outfitA} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;padding:0 6px;background:${v.oa.bg};color:${v.oa.fg}">의상 A</button>
@@ -1144,7 +1264,7 @@ ${(v.rightStats || []).map((s, $index) => html`
 </div>
 <div style="width:394px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;border:2px solid ${v.c.ink};padding:2px;background:${v.c.ink}">
 ${(v.statusToggles || []).map((s, $index) => html`
-<div class="tip-wrap" style="display:block"><button type="button" onClick=${s.toggle} aria-pressed=${s.on} style="width:100%;height:34px;cursor:pointer;font-size:11px;line-height:13px;padding:0 2px;white-space:pre-line;border:${s.border};background:${s.bg};color:${s.fg}">${s.label}</button><div class="tip t" role="tooltip"><b>${s.title}</b><br />${s.tip}<br />누르면 미리보기에 겹쳐 봅니다.</div></div>
+<div class="tip-wrap" style="display:block"><button type="button" onClick=${s.toggle} aria-pressed=${s.on} style="width:100%;height:34px;cursor:pointer;font-size:12px;line-height:13px;padding:0 2px;white-space:pre-line;border:${s.border};background:${s.bg};color:${s.fg}">${s.label}</button><div class="tip t" role="tooltip"><b>${s.title}</b><br />${s.tip}<br />누르면 미리보기에 겹쳐 봅니다.</div></div>
 `)}
 </div>
 </div>
@@ -1152,7 +1272,7 @@ ${(v.statusToggles || []).map((s, $index) => html`
 </div>
 ${(v.dragOver) ? html`
 <div aria-hidden="true" style="position:absolute;inset:0;z-index:95;pointer-events:none;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center">
-<div style="padding:18px 28px;background:${v.c.ink};color:${v.c.panel};border:2px solid ${v.c.panel};outline:2px solid ${v.c.ink};box-shadow:6px 6px 0 ${v.c.mid};font-size:14px;line-height:22px;text-align:center"><b>여기에 놓으면 불러옵니다</b><br /><span style="font-size:11px">폴더 · zip · .ito · 그림(png)</span></div>
+<div style="padding:18px 28px;background:${v.c.ink};color:${v.c.panel};border:2px solid ${v.c.panel};outline:2px solid ${v.c.ink};box-shadow:6px 6px 0 ${v.c.mid};font-size:12px;line-height:22px;text-align:center"><b>여기에 놓으면 불러옵니다</b><br /><span style="font-size:12px">폴더 · zip · .ito · 그림(png)</span></div>
 </div>
 ` : null}
 ${(v.bigOn) ? html`
@@ -1162,7 +1282,7 @@ ${(v.bigOn) ? html`
 ${(v.bigScales || []).map((b, $index) => html`
 <button type="button" onClick=${b.pick} aria-pressed=${b.on} style="height:22px;min-width:34px;border:2px solid ${v.c.ink};cursor:pointer;background:${b.bg};color:${b.fg}">×${b.n}</button>
 `)}
-<span style="font-size:10px;color:${v.c.mid};margin:0 6px">${v.bigNote}</span>
+<span style="font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;color:${v.c.mid};margin:0 6px">${v.bigNote}</span>
 <button type="button" onClick=${v.closeBig} style="height:22px;border:2px solid ${v.c.ink};cursor:pointer;background:${v.c.ink};color:${v.c.panel};padding:0 8px">닫기</button>
 </div>
 <div onClick=${v.stop} style="position:relative;width:${v.bigW}px;height:${v.bigH}px;border:2px solid ${v.c.panel};background:#000000;image-rendering:pixelated">
@@ -1177,7 +1297,7 @@ ${(v.overlays || []).map((o, $index) => html`
 ${(v.exportAsk) ? html`
 <div role="alertdialog" aria-label="내보내기 확인" style="position:absolute;inset:0;z-index:96;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center">
 <div style="width:360px;background:${v.c.panel};color:${v.c.ink};border:2px solid ${v.c.ink};box-shadow:6px 6px 0 ${v.c.mid}">
-<div style="padding:14px 14px 12px;font-size:13px;line-height:19px">퍽 팩 혹은 보너스가 없습니다. 이대로 내보낼까요?</div>
+<div style="padding:14px 14px 12px;font-size:12px;line-height:19px">퍽팩 혹은 보너스가 없습니다. 이대로 내보낼까요?</div>
 <div style="display:flex;border-top:2px solid ${v.c.ink}"><button type="button" onClick=${v.askNo} style="flex:1;height:30px;border:0;border-right:2px solid ${v.c.ink};background:${v.c.panel};color:${v.c.ink};cursor:pointer">취소</button><button type="button" onClick=${v.askYes} style="flex:1;height:30px;border:0;background:${v.c.ink};color:${v.c.panel};cursor:pointer;font-weight:700">내보내기</button></div>
 </div>
 </div>

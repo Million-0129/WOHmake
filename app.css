@@ -1,6 +1,7 @@
 
 @font-face{font-family:"Galmuri11";src:url("Galmuri11.woff2") format("woff2");font-weight:400}
 @font-face{font-family:"Galmuri11";src:url("Galmuri11-Bold.woff2") format("woff2");font-weight:700}
+@font-face{font-family:"Galmuri9";src:url("Galmuri9.woff2") format("woff2");font-weight:400}
 body{margin:0;background:#111}
 *{-webkit-font-smoothing:none;-moz-osx-font-smoothing:unset;font-smooth:never;text-rendering:optimizeSpeed;box-sizing:border-box}
 img,canvas{image-rendering:pixelated}
@@ -10,10 +11,10 @@ a{color:#111}a:hover{color:#555}
 .pk-win:hover .pk-in{animation-play-state:paused}
 @media (prefers-reduced-motion: reduce){.pk-in{animation:none !important}.pk-win{overflow-y:auto !important}.tip,.pk-tip{transition:none !important}}
 .tip-wrap{position:relative;display:flex}
-.tip{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;position:absolute;left:calc(100% + 12px);top:50%;width:210px;padding:6px 8px;background:var(--ink);color:var(--panel);border:2px solid var(--panel);outline:2px solid var(--ink);box-shadow:4px 4px 0 var(--mid);font-size:11px;line-height:15px;opacity:0;visibility:hidden;transform:translate(-6px,-50%);transition:opacity .12s steps(3),transform .12s steps(3),visibility 0s .12s;z-index:60;pointer-events:none}
+.tip{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;position:absolute;left:calc(100% + 12px);top:50%;width:210px;padding:6px 8px;background:var(--ink);color:var(--panel);border:2px solid var(--panel);outline:2px solid var(--ink);box-shadow:4px 4px 0 var(--mid);font-size:12px;line-height:15px;opacity:0;visibility:hidden;transform:translate(-6px,-50%);transition:opacity .12s steps(3),transform .12s steps(3),visibility 0s .12s;z-index:60;pointer-events:none}
 .tip::before{content:"";position:absolute;left:-10px;top:50%;margin-top:-6px;border:6px solid transparent;border-right-color:var(--ink);border-left:0}
 .tip-wrap:hover .tip,.tip-wrap:has(:focus-visible) .tip{opacity:1;visibility:visible;transform:translate(0,-50%);transition:opacity .12s steps(3),transform .12s steps(3),visibility 0s}
-.tip-key{display:inline-block;margin-left:4px;padding:0 4px;border:1px solid var(--panel);font-size:10px;line-height:13px}
+.tip-key{display:inline-block;margin-left:4px;padding:0 4px;border:1px solid var(--panel);font-size:10px;font-family:Galmuri9,Galmuri11,monospace;font-weight:400;line-height:13px}
 .tip.l{left:auto;right:calc(100% + 12px);transform:translate(6px,-50%)}
 .tip.l::before{left:auto;right:-10px;border:6px solid transparent;border-left-color:var(--ink);border-right:0}
 .tip-wrap:hover .tip.l,.tip-wrap:has(:focus-visible) .tip.l{transform:translate(0,-50%)}
@@ -28,7 +29,7 @@ a{color:#111}a:hover{color:#555}
 .tip-wrap:hover .tip.bl,.tip-wrap:has(:focus-visible) .tip.bl{transform:translate(0,0)}
 .tip-wrap:hover .tip.t,.tip-wrap:has(:focus-visible) .tip.t{transform:translate(-50%,0)}
 .tip b{font-size:12px}
-.ftip{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;position:absolute;width:240px;padding:6px 8px;background:var(--ink);color:var(--panel);border:2px solid var(--panel);outline:2px solid var(--ink);box-shadow:4px 4px 0 var(--mid);font-size:11px;line-height:15px;z-index:90;pointer-events:none;animation:ftip-in .12s steps(3)}
+.ftip{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;position:absolute;width:240px;padding:6px 8px;background:var(--ink);color:var(--panel);border:2px solid var(--panel);outline:2px solid var(--ink);box-shadow:4px 4px 0 var(--mid);font-size:12px;line-height:15px;z-index:90;pointer-events:none;animation:ftip-in .12s steps(3)}
 @keyframes ftip-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .ftip b{font-size:12px}
 .tips-off .tip,.tips-off .pk-tip,.tips-off .ftip{display:none !important}
@@ -47,5 +48,5 @@ a{color:#111}a:hover{color:#555}
 .zbox::-webkit-scrollbar-track,.zbox::-webkit-scrollbar-track-piece{background:transparent;border:0;box-shadow:none}
 .zbox::-webkit-scrollbar-button{display:none;width:0;height:0}
 .pk-card{position:relative}
-.pk-tip{position:absolute;left:4px;right:4px;top:4px;bottom:34px;padding:6px 8px;overflow-y:auto;background:var(--ink);color:var(--panel);font-size:11px;line-height:15px;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .12s steps(3),transform .12s steps(3),visibility 0s .12s;z-index:5}
+.pk-tip{position:absolute;left:4px;right:4px;top:4px;bottom:34px;padding:6px 8px;overflow-y:auto;background:var(--ink);color:var(--panel);font-size:12px;line-height:15px;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .12s steps(3),transform .12s steps(3),visibility 0s .12s;z-index:5}
 .pk-card:hover .pk-tip,.pk-card:has(:focus-visible) .pk-tip{opacity:1;visibility:visible;transform:translateY(0);transition:opacity .12s steps(3),transform .12s steps(3),visibility 0s}
